@@ -504,9 +504,72 @@
 }
 /*----------------------------move_from_up_TOTO----------------------------*/
 
+/*----------------------------move_from_down_long----------------------------*/
+@-moz-keyframes move_from_down_long{
+    0% {
+        -moz-transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        -moz-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-ms-keyframes move_from_down_long{
+    0% {
+        -ms-transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        -ms-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-o-keyframes move_from_down_long{
+    0% {
+        -o-transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        -o-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-webkit-keyframes move_from_down_long{
+    0% {
+        -webkit-transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        -webkit-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@keyframes move_from_down_long{
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+.move_from_down_long {
+    -webkit-animation:move_from_down_long 1s ease-out 0s 1 normal forwards running;
+    -moz-animation:move_from_down_long 1s ease-out 0s 1 normal forwards running;
+    -ms-animation:move_from_down_long 1s ease-out 0s 1 normal forwards running;
+    -o-animation:move_from_down_long 1s ease-out 0s 1 normal forwards running;
+    animation:move_from_down_long 1s ease-out 0s 1 normal forwards running;
+}
+/*----------------------------move_from_down_long----------------------------*/
+
+
 /*----------------------------说明----------------------------*/
 /*ctrl+g:23-move_from_left_TOTO*/
 /*ctrl+g:145-move_from_right_TOTO*/
 /*ctrl+g:266-move_from_down_TOTO*/
 /*ctrl+g:386-move_from_up_TOTO*/
+/*ctrl+g:508-move_from_down_long*/
 /*----------------------------说明----------------------------*/

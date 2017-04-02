@@ -41,56 +41,6 @@
 
 
 
-.move_from_up_TOTO {
-    animation: move_from_up_TOTO .75s ease-out 1;
-    -webkit-animation: move_from_up_TOTO .75s ease-out 1;
-}
-
-@keyframes move_from_up_TOTO {
-    0% {
-        transform: translate3d(0, -640px, 0);
-        opacity: 0;
-    }
-    50% {
-        transform: translate3d(0, 40px, 0);
-        opacity: 1;
-    }
-    70% {
-        transform: translate3d(0, -25px, 0);
-        opacity: 1;
-    }
-    88% {
-        transform: translate3d(0, 12px, 0);
-        opacity: 1;
-    }
-    100% {
-        transform: translate3d(0, 0px, 0);
-        opacity: 1;
-    }
-}
-
-@-webkit-keyframes move_from_up_TOTO {
-    0% {
-        -webkit-transform: translate3d(0, -640px, 0);
-        opacity: 0;
-    }
-    50% {
-        -webkit-transform: translate3d(0, 40px, 0);
-        opacity: 1;
-    }
-    70% {
-        -webkit-transform: translate3d(0, -25px, 0);
-        opacity: 1;
-    }
-    88% {
-        -webkit-transform: translate3d(0, 12px, 0);
-        opacity: 1;
-    }
-    100% {
-        -webkit-transform: translate3d(0, 0px, 0);
-        opacity: 1;
-    }
-}
 
 .move_from_rightUp_TOTO {
     animation: move_from_rightUp_TOTO .6s ease-out 1;
