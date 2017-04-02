@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        var ua = navigator.userAgent;
+        var phoneWidth = parseInt(window.screen.width), phoneScale = phoneWidth / 640;
+        if (/Android (\d+\.\d+)/.test(ua)) {
+            var version = parseFloat(RegExp.$1);
+            var qqv = ua.match(/MQQBrowser\/(\d+)/) ? ua.match(/MQQBrowser\/(\d+)/)[1] : 0;
+            if (version > 2.3 && qqv < 6) {
+                document.write('<meta name="viewport" content="width=640, minimum-scale = ' + phoneScale + ", maximum-scale = " + phoneScale + ', target-densitydpi=device-dpi,user-scalable=no">')
+            } else {
+                document.write('<meta name="viewport" content="width=640, target-densitydpi=device-dpi,user-scalable=no">')
+            }
+        } else {
+            document.write('<meta name="viewport" content="width=640, user-scalable=no, target-densitydpi=device-dpi">')
+        }
+    </script>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="apple-touch-fullscreen" content="yes"/>
+    <link href="css/common.css" rel="stylesheet" type="text/css">
+    <script>
+        var css;
+        css = '<'+'link '+'href='+"css/index.css?v"+Math.random()+' rel='+"stylesheet "+'type='+"text/css"+'>'
+        document.write(css)
+    </script>
+    <title>CanvasAnimation</title>
+</head>
+<body>
+
+
+
+<div class="container hp none">
+    <div class="hp_box">
+        <img src="images/phone.png" class="phone">
+        <img src="images/weile.png" class="hp_tip">
+    </div>
+</div>
+<script src="js/jquery-1.11.3.min.js"></script>
+<script>
+    var js;
+    js = '<' + 'script ' + 'src=' + "js/index.js?v" + Math.random() + '>' + '</' + 'script' + '>'
+    document.write(js)
+</script>
+
+</body>
+</html>

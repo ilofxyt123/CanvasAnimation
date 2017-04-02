@@ -1,0 +1,512 @@
+/*----------------------------速查----------------------------*/
+/*animation-name:PlayVideo;*/
+/*-webkit-animation-name:PlayVideo;*/
+/*animation-duration:2s;*/
+/*-webkit-animation-duration:2s;*/
+/*animation-timing-function:linear(匀速)|ease(默认,慢开+匀速+慢停)|ease-in(低速开始+匀速)|ease-out(匀速+低速结束)|ease-in-out(慢速开始+慢速结束)*/
+/*-webkit-animation-timing-function:linear(匀速)|ease(默认,慢开+匀速+慢停)|ease-in(低速开始+匀速)|ease-out(匀速+低速结束)|ease-in-out(慢速开始+慢速结束)*/
+/*animation-delay:1s;*/
+/*-webkit-animation-delay:1s;*/
+/*animation-iteration-count:1|infinite;*/
+/*-webkit-animation-iteration-count:1|infinite;*/
+/*animation-direction:normal|reverse(反向)|alternate(1,3,5正向)|alternate-reverse(2,4,6正向)*/
+/*-webkit-animation-direction:normal|reverse(反向)|alternate(1,3,5正向)|alternate-reverse(2,4,6正向)*/
+/*animation-fill-mode:none(默认,动画执行前后不会应用任何样式到元素)|forwards(动画结束后应用最后一帧的属性)|backwards(动画结束后应用第一帧的属性和)|both(动画会在两个方向上扩展动画属性)*/
+/*-webkit-animation-fill-mode:none(默认,动画执行前后不会应用任何样式到元素)|forwards(动画结束后应用最后一帧的属性)|backwards(动画结束后应用第一帧的属性和)|both(动画会在两个方向上扩展动画属性)*/
+/*animation-play-state:paused|running;*/
+/*-webkit-animation-play-state:paused|running;*/
+
+/*animation:animation-name animation-duration animation-timing-function animation-delay animation-iteration-count animation-direction animation-fill-mode animation-play-state;*/
+/*----------------------------速查----------------------------*/
+
+/*----------------------------move_from_left_TOTO----------------------------*/
+@-moz-keyframes move_from_left_TOTO{
+    0% {
+        -moz-transform: translateX(-640px);
+        opacity: 0;
+    }
+    50% {
+        -moz-transform: translateX(40px);
+        opacity: 1;
+    }
+    70% {
+        -moz-transform: translateX(-25px);
+        opacity: 1;
+    }
+    88% {
+        -moz-transform: translateX(12pX);
+        opacity: 1;
+    }
+    100% {
+        -moz-transform: translateX(0px);
+        opacity: 1;
+    }
+
+}
+@-ms-keyframes move_from_left_TOTO{
+    0% {
+        -ms-transform: translateX(-640px);
+        opacity: 0;
+    }
+    50% {
+        -ms-transform: translateX(40px);
+        opacity: 1;
+    }
+    70% {
+        -ms-transform: translateX(-25px);
+        opacity: 1;
+    }
+    88% {
+        -ms-transform: translateX(12pX);
+        opacity: 1;
+    }
+    100% {
+        -ms-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@-o-keyframes move_from_left_TOTO{
+    0% {
+        -o-transform: translateX(-640px);
+        opacity: 0;
+    }
+    50% {
+        -o-transform: translateX(40px);
+        opacity: 1;
+    }
+    70% {
+        -o-transform: translateX(-25px);
+        opacity: 1;
+    }
+    88% {
+        -o-transform: translateX(12pX);
+        opacity: 1;
+    }
+    100% {
+        -o-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@-webkit-keyframes move_from_left_TOTO{
+    0% {
+        -webkit-transform: translateX(-640px);
+        opacity: 0;
+    }
+    50% {
+        -webkit-transform: translateX(40px);
+        opacity: 1;
+    }
+    70% {
+        -webkit-transform: translateX(-25px);
+        opacity: 1;
+    }
+    88% {
+        -webkit-transform: translateX(12pX);
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@keyframes move_from_left_TOTO{
+    0% {
+        transform: translateX(-640px);
+        opacity: 0;
+    }
+    50% {
+        transform: translateX(40px);
+        opacity: 1;
+    }
+    70% {
+        transform: translateX(-25px);
+        opacity: 1;
+    }
+    88% {
+        transform: translateX(12pX);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+}
+
+.move_from_left_TOTO {
+    -webkit-animation:move_from_left_TOTO 1s ease-out 0s 1 normal forwards running;
+    -moz-animation:move_from_left_TOTO 1s ease-out 0s 1 normal forwards running;
+    -ms-animation:move_from_left_TOTO 1s ease-out 0s 1 normal forwards running;
+    -o-animation:move_from_left_TOTO 1s ease-out 0s 1 normal forwards running;
+    animation:move_from_left_TOTO 1s ease-out 0s 1 normal forwards running;
+}
+/*----------------------------move_from_left_TOTO----------------------------*/
+
+/*----------------------------move_from_right_TOTO----------------------------*/
+@-moz-keyframes move_from_right_TOTO{
+    0% {
+        -moz-transform: translateX(640px);
+        opacity: 0;
+    }
+    50% {
+        -moz-transform: translateX(-40px);
+        opacity: 1;
+    }
+    70% {
+        -moz-transform: translateX(25px);
+        opacity: 1;
+    }
+    88% {
+        -moz-transform: translateX(-12px);
+        opacity: 1;
+    }
+    100% {
+        -moz-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@-ms-keyframes move_from_right_TOTO{
+    0% {
+        -ms-transform: translateX(640px);
+        opacity: 0;
+    }
+    50% {
+        -ms-transform: translateX(-40px);
+        opacity: 1;
+    }
+    70% {
+        -ms-transform: translateX(25px);
+        opacity: 1;
+    }
+    88% {
+        -ms-transform: translateX(-12px);
+        opacity: 1;
+    }
+    100% {
+        -ms-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@-o-keyframes move_from_right_TOTO{
+    0% {
+        -o-transform: translateX(640px);
+        opacity: 0;
+    }
+    50% {
+        -o-transform: translateX(-40px);
+        opacity: 1;
+    }
+    70% {
+        -o-transform: translateX(25px);
+        opacity: 1;
+    }
+    88% {
+        -o-transform: translateX(-12px);
+        opacity: 1;
+    }
+    100% {
+        -o-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@-webkit-keyframes move_from_right_TOTO{
+    0% {
+        -webkit-transform: translateX(640px);
+        opacity: 0;
+    }
+    50% {
+        -webkit-transform: translateX(-40px);
+        opacity: 1;
+    }
+    70% {
+        -webkit-transform: translateX(25px);
+        opacity: 1;
+    }
+    88% {
+        -webkit-transform: translateX(-12px);
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@keyframes move_from_right_TOTO{
+    0% {
+        transform: translateX(640px);
+        opacity: 0;
+    }
+    50% {
+        transform: translateX(-40px);
+        opacity: 1;
+    }
+    70% {
+        transform: translateX(25px);
+        opacity: 1;
+    }
+    88% {
+        transform: translateX(-12px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+}
+
+.move_from_right_TOTO {
+    -webkit-animation:move_from_right_TOTO 1s ease-out 0s 1 normal forwards running;
+    -moz-animation:move_from_right_TOTO 1s ease-out 0s 1 normal forwards running;
+    -ms-animation:move_from_right_TOTO 1s ease-out 0s 1 normal forwards running;
+    -o-animation:move_from_right_TOTO 1s ease-out 0s 1 normal forwards running;
+    animation:move_from_right_TOTO 1s ease-out 0s 1 normal forwards running;
+}
+/*----------------------------move_from_right_TOTO----------------------------*/
+
+/*----------------------------move_from_down_TOTO----------------------------*/
+@-moz-keyframes move_from_down_TOTO{
+    0% {
+        -moz-transform: translateY(640px);
+        opacity: 0;
+    }
+    50% {
+        -moz-transform: translateY(-40px);
+        opacity: 1;
+    }
+    70% {
+        -moz-transform: translateY(25px);
+        opacity: 1;
+    }
+    88% {
+        -moz-transform: translateY(-12px);
+        opacity: 1;
+    }
+    100% {
+        -moz-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-ms-keyframes move_from_down_TOTO{
+    0% {
+        -ms-transform: translateY(640px);
+        opacity: 0;
+    }
+    50% {
+        -ms-transform: translateY(-40px);
+        opacity: 1;
+    }
+    70% {
+        -ms-transform: translateY(25px);
+        opacity: 1;
+    }
+    88% {
+        -ms-transform: translateY(-12px);
+        opacity: 1;
+    }
+    100% {
+        -ms-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-o-keyframes move_from_down_TOTO{
+    0% {
+        -o-transform: translateY(640px);
+        opacity: 0;
+    }
+    50% {
+        -o-transform: translateY(-40px);
+        opacity: 1;
+    }
+    70% {
+        -o-transform: translateY(25px);
+        opacity: 1;
+    }
+    88% {
+        -o-transform: translateY(-12px);
+        opacity: 1;
+    }
+    100% {
+        -o-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-webkit-keyframes move_from_down_TOTO{
+    0% {
+        -webkit-transform: translateY(640px);
+        opacity: 0;
+    }
+    50% {
+        -webkit-transform: translateY(-40px);
+        opacity: 1;
+    }
+    70% {
+        -webkit-transform: translateY(25px);
+        opacity: 1;
+    }
+    88% {
+        -webkit-transform: translateY(-12px);
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@keyframes move_from_down_TOTO{
+    0% {
+        transform: translateY(640px);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(-40px);
+        opacity: 1;
+    }
+    70% {
+        transform: translateY(25px);
+        opacity: 1;
+    }
+    88% {
+        transform: translateY(-12px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+.move_from_down_TOTO {
+    -webkit-animation:move_from_down_TOTO 1s ease-out 0s 1 normal forwards running;
+    -moz-animation:move_from_down_TOTO 1s ease-out 0s 1 normal forwards running;
+    -ms-animation:move_from_down_TOTO 1s ease-out 0s 1 normal forwards running;
+    -o-animation:move_from_down_TOTO 1s ease-out 0s 1 normal forwards running;
+    animation:move_from_down_TOTO 1s ease-out 0s 1 normal forwards running;
+}
+/*----------------------------move_from_down_TOTO----------------------------*/
+
+/*----------------------------move_from_up_TOTO----------------------------*/
+@-moz-keyframes move_from_up_TOTO{
+    0% {
+        -moz-transform: translateY(-640px);
+        opacity: 0;
+    }
+    50% {
+        -moz-transform: translateY(40px);
+        opacity: 1;
+    }
+    70% {
+        -moz-transform: translateY(-25px);
+        opacity: 1;
+    }
+    88% {
+        -moz-transform: translateY(12px);
+        opacity: 1;
+    }
+    100% {
+        -moz-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-ms-keyframes move_from_up_TOTO{
+    0% {
+        -ms-transform: translateY(-640px);
+        opacity: 0;
+    }
+    50% {
+        -ms-transform: translateY(40px);
+        opacity: 1;
+    }
+    70% {
+        -ms-transform: translateY(-25px);
+        opacity: 1;
+    }
+    88% {
+        -ms-transform: translateY(12px);
+        opacity: 1;
+    }
+    100% {
+        -ms-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-o-keyframes move_from_up_TOTO{
+    0% {
+        -o-transform: translateY(-640px);
+        opacity: 0;
+    }
+    50% {
+        -o-transform: translateY(40px);
+        opacity: 1;
+    }
+    70% {
+        -o-transform: translateY(-25px);
+        opacity: 1;
+    }
+    88% {
+        -o-transform: translateY(12px);
+        opacity: 1;
+    }
+    100% {
+        -o-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@-webkit-keyframes move_from_up_TOTO{
+    0% {
+        -webkit-transform: translateY(-640px);
+        opacity: 0;
+    }
+    50% {
+        -webkit-transform: translateY(40px);
+        opacity: 1;
+    }
+    70% {
+        -webkit-transform: translateY(-25px);
+        opacity: 1;
+    }
+    88% {
+        -webkit-transform: translateY(12px);
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: translateY(0px);
+        opacity: 1;
+    }
+}
+@keyframes move_from_up_TOTO{
+    0% {
+        transform: translateY(-640px);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(40px);
+        opacity: 1;
+    }
+    70% {
+        transform: translateY(-25px);
+        opacity: 1;
+    }
+    88% {
+        transform: translateY(12px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+.move_from_up_TOTO {
+    -webkit-animation:move_from_up_TOTO 1s ease-out 0s 1 normal forwards running;
+    -moz-animation:move_from_up_TOTO 1s ease-out 0s 1 normal forwards running;
+    -ms-animation:move_from_up_TOTO 1s ease-out 0s 1 normal forwards running;
+    -o-animation:move_from_up_TOTO 1s ease-out 0s 1 normal forwards running;
+    animation:move_from_up_TOTO 1s ease-out 0s 1 normal forwards running;
+}
+/*----------------------------move_from_up_TOTO----------------------------*/
+
+/*----------------------------说明----------------------------*/
+/*ctrl+g:23-move_from_left_TOTO*/
+/*ctrl+g:145-move_from_right_TOTO*/
+/*ctrl+g:266-move_from_down_TOTO*/
+/*ctrl+g:386-move_from_up_TOTO*/
+/*----------------------------说明----------------------------*/

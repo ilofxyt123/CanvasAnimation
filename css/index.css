@@ -1,0 +1,33 @@
+html,body{
+    width:640px;
+    height:100%;
+    overflow: hidden;
+    position: relative;
+    margin:0 auto;
+    background-color:white;
+}
+
+.hp{
+    background: #000;
+    z-index: 999;
+    display: none;
+}
+.hp_box{
+    width:40%;
+    position: absolute;
+    left:30%;
+    height:100%;
+}
+.phone {
+    width:50%;
+    position:absolute;
+    left:50%;
+    margin-left:-25%;
+    top:33%;
+
+}
+.hp_tip{
+    width:100%;
+    position:absolute;
+    top:70%;
+}
