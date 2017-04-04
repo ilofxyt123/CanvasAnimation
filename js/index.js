@@ -75,8 +75,8 @@
                     x:0,
                     y:0,
                     z:0,
-                    width:config.width == "normal"?this.pointWidth:config.width,//如果宽度不给，均为10;如果给了宽，则可选是否随机
-                    height:config.height == "normal"?this.pointHeight:config.height,
+                    width:config.width == "normal" ? this.pointWidth:config.width,//如果宽度不给，均为10;如果给了宽，则可选是否随机
+                    height:config.height == "normal" ? this.pointHeight:config.height,
                     flag:false,
                     opacity: "normal" == config.opacity ? 1 : this.rand(0, 10) / 10
                 });
@@ -200,7 +200,7 @@
             config.index = config.index ? config.index:0;
             config.limit = config.limit ? config.limit:60;
             config.speed = ("number" == typeof config.speed) ? config.speed:3;
-            config.zFlag = ("boolean" == typeof config.zFlag) ? config.zFlag:true;
+            config.zFlag = ("boolean" == typeof config.zFlag) ? config.zFlag:false;
             this.points[config.index].free.flag = true;
             this.points[config.index].free.now = 0;
             this.points[config.index].free.zFlag = config.zFlag;
@@ -212,14 +212,23 @@
                 y:this.rand(-config.speed,config.speed),
                 z:this.rand(-config.speed,config.speed)
             }
-        }
-        ,
+        },
+        freePoint:function(index){
+            var point = this.points[index];
+            if(point.free.flag = false){return;};
+            point.x+=point.free.speed.x;
+            point.y+=point.free.speed.y;
+            if(point.free.zFlag == false){return;}
+        },
         draw:function(){
             this.setTime();
             this._ctx.clearRect(-this._canvas.width/2,-this._canvas.height/2,this._canvas.width,this._canvas.height);
-            
             // this.setTime();
-            // this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,0,0,this.pointObj.width,this.pointObj.height);
+            var i;
+            for(i = 0;i<this.points.length;i++){
+                this.freePoint(i);
+                this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].x-this.points[i].width/2,this.points[i].y-this.points[i].height/2,this.points[i].width,this.points[i].height);
+            }
             this.drawLines();
         },//绘制一帧
         drawLines:function(){},
@@ -249,6 +258,7 @@
         this.canvasAnimation = undefined;
         this.RAF = 0;
         this.init();
+
     };
     main.prototype = {
         init:function(){
@@ -261,6 +271,10 @@
             this.canvasAnimation.init({
                 pointNumber:11,
             });
+            for(var i=0;i<this.canvasAnimation.points.length;i++){
+                this.canvasAnimation.points[i].x = this.rand(-320,320);
+                this.canvasAnimation.points[i].y = this.rand(-320,320);
+            }
         },
         startRAF:function(){
             var _self = this;
@@ -273,6 +287,9 @@
         },
         stopRAF:function(){
             window.cancelAnimationFrame(this.RAF);
+        },
+        rand:function (min, max) {
+            return ~~(Math.random() * (max - min + 1) + min)
         },
     };
 
