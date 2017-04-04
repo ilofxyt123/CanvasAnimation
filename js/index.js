@@ -24,7 +24,7 @@
         this._hd = Math.PI / 180;//弧度
 
         this.focusLength = 300;//焦距
-        this.buffer = false;//临时数据,3D坐标转2D坐标
+        this.fixResult = false;//临时数据,3D坐标转2D坐标
         this.camera = {
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
@@ -112,8 +112,8 @@
              *   free.speedSpace:0//!!!!!!!!!!!!!!未知，默认为0,0,0
              *   
              *   valid:true//!!!!!!!!!!!!!!未知，初始为true
-             *   inTask:false//!!!!!!!!!!!!!!未知，初始个false
-             *   noTask:false//!!!!!!!!!!!!!!未知，初始个false
+             *   inTask:false//粒子是否在动画中，初始给false
+             *   noTask:false//!!!!!!!!!!!!!!未知，初始给false
              *   opacityTask:false//!!!!!!!!!!!!!!未知，默认为
              *   buffer2D:{x:0,y:0}//3D转2D坐标，初始化0,0
              *   trail:0//!!!!!!!!!!!!!!轨迹，默认为0
@@ -195,6 +195,46 @@
 
             this.points.push(config)
         },
+        addPointTask:function(config){
+            config = config ? config:{};
+            config.index = config.index ? config.index:(function(){console.log("请确定需要做动画的点");return false;}());//要做动画的points[index]
+            config.obj = config.obj ? config.obj : this.points[config.index];//即将做动画的属性来自于obj，默认从整个points数组中搜索
+            config.isOver = false;//动画结束标志，默认未结束
+            config.now = config.now ? config.now:0;//运动进度,默认0
+            config.limit = config.limit ? config.limit:60;
+            config.type = config.type ? config.type:"easeOut";//动画类型，默认easeOut
+            config.callback = config.callback ? config.callback : false;//动画结束回调，默认无回调
+            config.everyCallback = config.everyCallback ? config.everyCallback : false;//每一步动画的回调，默认无回调
+            config.delay = config.delay ? config.delay : 0;//动画延时时间，默认不延迟
+            config.delayNow = config.delayNow ? config.delayNow : 0;//当前延时进度，默认0开始
+
+            config.repeat = config.repeat ? config.repeat : 0;//动画重复次数，默认不重复
+            config.repeatNow = config.repeatNow ? config.repeatNow : 0;//动画当前重复进度，默认0开始
+            config.repeatDir = ("boolean" == typeof config.repeatDir) ? config.repeatDir : true;//动画重复的方向，默认为true
+            config.repeatCallback = config.repeatCallback ? config.repeatCallback : false;//动画单次重复结束后回调，默认无回调
+
+            config.bezierData = config.bezierData ? config.bezierData : false;
+            config.bezierFlag = false;//是否为贝塞尔运动
+            if("bezier" == config.type.substr(0,6)){
+                config.bezierFlag = true;
+                config.attr = ["x","y","z"];
+            };
+            config.attr = config.attr ? config.attr : ["x","y","z"];//需要做动画的属性数组，默认为x,y,z
+            config.start = config.start ? config.start : {};//需要做动画的属性的起始点
+            config.end = config.end ? config.end : {};//需要做动画的属性的终点
+
+            for(var l= 0;l < config.attr.length;l++){//检测要做动画的属性，起点终点添加是否正确
+                if(config.start[config.attr[l]] == undefined){
+                    alert("动画添加失败，缺少动画起点属性start")
+                }
+                if(config.end[config.attr[l]] == undefined){
+                    alert("动画添加失败,缺少动画终点属性end");
+                    return;
+                }
+            }
+            
+            this.task.push();
+        },
         setPointFree:function(config){
             config = config ? config:{};
             config.index = config.index ? config.index:0;
@@ -211,14 +251,39 @@
                 x:this.rand(-config.speed,config.speed),
                 y:this.rand(-config.speed,config.speed),
                 z:this.rand(-config.speed,config.speed)
+            };
+            for(var prop in this.points[config.index].free.speed){
+                if(Math.abs(this.points[config.index].free.speed[prop])<0.5){
+                    this.points[config.index].free.speed[prop]*=2;
+                }
+                if(Math.abs(this.points[config.index].free.speed[prop])>1){
+                    this.points[config.index].free.speed[prop]/=2;
+                }
             }
         },
         freePoint:function(index){
             var point = this.points[index];
-            if(point.free.flag = false){return;};
+            if(point.free.flag == false || point.inTask){return;};//非自由粒子跳出function
+
             point.x+=point.free.speed.x;
             point.y+=point.free.speed.y;
-            if(point.free.zFlag == false){return;}
+            if(point.free.zFlag == true){point.z+=point.free.speed.z;}
+            point.free.now+=this.speed;
+
+            if(point.free.now>=point.free.limit){
+                point.free.now = 0;
+                point.free.limit = this.rand(point.free.limitSpace/2,point.free.limitSpace);
+                point.free.speed = {
+                    x:point.free.speed.x*=this.getOne(),
+                    y:point.free.speed.y*=this.getOne(),
+                    z:point.free.speed.z*=this.getOne()
+                }
+            }
+
+        },
+        fixPoint:function(index){
+            if(this.points[index].flag==false){return;};
+            var point = this.points[index];
         },
         draw:function(){
             this.setTime();
@@ -227,6 +292,7 @@
             var i;
             for(i = 0;i<this.points.length;i++){
                 this.freePoint(i);
+                this.fixResult = this.fixPoint(i);
                 this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].x-this.points[i].width/2,this.points[i].y-this.points[i].height/2,this.points[i].width,this.points[i].height);
             }
             this.drawLines();
@@ -248,10 +314,124 @@
             return window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (handler) {setTimeout(handler, 1000 / 60)}
         },
         rand:function (min, max) {
-            return ~~(Math.random() * (max - min + 1) + min)
+            return (Math.round((Math.random() * (max - min + 1) + min)*100)/100)
         },
         now:function(){
             return new Date().getTime();
+        },
+        getOne:function(){
+            return ((Math.random()>0.5)?1:-1)
+        },
+        T:{
+            linear:function(nowTime,startPosition,delta,duration){
+                return delta*nowTime/duration+startPosition;
+            },
+
+            easeOut:function(nowTime,startPosition,delta,duration){
+                return -delta*(nowTime/=duration)*(nowTime-2)+startPosition;
+            },
+            easeIn:function(nowTime,startPosition,delta,duration){
+                return delta*(nowTime/=duration)*nowTime+startPosition;
+            },
+            easeInOut:function(nowTime,startPosition,delta,duration){
+                return 1 > (nowTime /= duration / 2) ? delta / 2 * nowTime * nowTime + startPosition : -delta / 2 * (--nowTime * (nowTime - 2) - 1) + startPosition
+            },
+
+            easeInCubic:function (b,f,g,k) {
+                return g * (b /= k) * b * b + f;
+            },
+            easeOutCubic:function (b,f,g,k) {
+                return g * ((b = b / k - 1) * b * b + 1) + f;
+            },
+            easeInOutCubic:function (b,f,g,k) {
+                return 1 > (b /= k / 2) ? g / 2 * b * b * b + f : g / 2 * ((b -= 2) * b * b + 2) + f
+            },
+
+            easeInQuart:function (b,f,g,k) {
+                return g * (b /= k) * b * b * b + f
+            },
+            easeOutQuart:function (b,f,g,k) {
+                return -g * ((b = b / k - 1) * b * b * b - 1) + f
+            },
+            easeInOutQuart:function (b,f,g,k) {
+                return 1 > (b /= k / 2) ? g / 2 * b * b * b * b + f : -g / 2 * ((b -= 2) * b * b * b - 2) + f
+            },
+
+            easeInQuint:function (b,f,g,k) {
+                return g * (b /= k) * b * b * b * b + f
+            },
+            easeOutQuint:function (b,f,g,k) {
+                return g * ((b = b / k - 1) * b * b * b * b + 1) + f
+            },
+            easeInOutQuint:function (b,f,g,k) {
+                return 1 > (b /= k / 2) ? g / 2 * b * b * b * b * b + f : g / 2 * ((b -= 2) * b * b * b * b + 2) + f
+            },
+            
+            easeInSine:function (b,f,g,k) {
+                return -g * Math.cos(b / k * (Math.PI / 2)) + g + f
+            },
+            easeOutSine:function (b,f,g,k) {
+                return g * Math.sin(b / k * (Math.PI / 2)) + f
+            },
+            easeInOutSine:function (b,f,g,k) {
+                return -g / 2 * (Math.cos(Math.PI * b / k) - 1) + f
+            },
+            
+            easeInExpo:function (b,f,g,k) {
+                return 0 == b ? f : g * Math.pow(2, 10 * (b / k - 1)) + f
+            },
+            easeOutExpo:function (b,f,g,k) {
+                return b == k ? f + g : g * (-Math.pow(2, -10 * b / k) + 1) + f
+            },
+            easeInOutExpo:function (b,f,g,k) {
+                return 0 == b ? f : b == k ? f + g : 1 > (b /= k / 2) ? g / 2 * Math.pow(2, 10 * (b - 1)) + f : g / 2 * (-Math.pow(2, -10 * --b) + 2) + f
+            },
+            
+            easeInCirc:function (b, f, g, k) {
+                return -g * (Math.sqrt(1 - (b /= k) * b) - 1) + f
+            },
+            easeOutCirc:function (b, f, g, k) {
+                return g * Math.sqrt(1 - (b = b / k - 1) * b) + f
+            },
+            easeInOutCirc:function (b, f, g, k) {
+                return 1 > (b /= k / 2) ? -g / 2 * (Math.sqrt(1 - b * b) - 1) + f : g / 2 * (Math.sqrt(1 - (b -= 2) * b) + 1) + f
+            },
+            
+            easeInElastic:function (a, b, f, g, k) {
+                a = 0;
+                var n = g;
+                if (0 == b)return f;
+                if (1 == (b /= k))return f + g;
+                a || (a = .3 * k);
+                n < Math.abs(g) ? (n = g, g = a / 4) : g = a / (2 * Math.PI) * Math.asin(g / n);
+                return -(n * Math.pow(2, 10 * --b) * Math.sin(2 * (b * k - g) * Math.PI / a)) + f
+            },
+            easeOutElastic:function (a, b, f, g, k) {
+                var n = 0, A = g;
+                if (0 == b)return f;
+                if (1 == (b /= k))return f + g;
+                n || (n = .3 * k);
+                A < Math.abs(g) ? (A = g, a = n / 4) : a = n / (2 * Math.PI) * Math.asin(g / A);
+                return A * Math.pow(2, -10 * b) * Math.sin(2 * (b * k - a) * Math.PI / n) + g + f
+            },
+            easeInOutElastic:function (a, b, f, g, k) {
+                var n = 0, A = g;
+                if (0 == b)return f;
+                if (2 == (b /= k / 2))return f + g;
+                n || (n = .3 * k * 1.5);
+                A < Math.abs(g) ? (A = g, a = n / 4) : a = n / (2 * Math.PI) * Math.asin(g / A);
+                return 1 > b ? -.5 * A * Math.pow(2, 10 * --b) * Math.sin(2 * (b * k - a) * Math.PI / n) + f : A * Math.pow(2, -10 * --b) * Math.sin(2 * (b * k - a) * Math.PI / n) * .5 + g + f
+            },
+            
+            easeInBounce:function (a, b, f, g, k) {
+                return g - this.easeOutBounce(a, k - b, 0, g, k) + f
+            },
+            easeOutBounce:function (a, b, f, g, k) {
+                return (b /= k) < 1 / 2.75 ? 7.5625 * g * b * b + f : b < 2 / 2.75 ? g * (7.5625 * (b -= 1.5 / 2.75) * b + .75) + f : b < 2.5 / 2.75 ? g * (7.5625 * (b -= 2.25 / 2.75) * b + .9375) + f : g * (7.5625 * (b -= 2.625 / 2.75) * b + .984375) + f
+            },
+            easeInOutBounce:function (a, b, f, g, k) {
+                return b < k / 2 ? .5 * this.easeInBounce(a, 2 * b, 0, g, k) + f : .5 * this.easeOutBounce(a, 2 * b - k, 0, g, k) + .5 * g + f
+            },
         }
     };
     var main = function(){
@@ -271,10 +451,14 @@
             this.canvasAnimation.init({
                 pointNumber:11,
             });
-            for(var i=0;i<this.canvasAnimation.points.length;i++){
-                this.canvasAnimation.points[i].x = this.rand(-320,320);
-                this.canvasAnimation.points[i].y = this.rand(-320,320);
+            for(var i=8;i<this.canvasAnimation.points.length;i++){
+                this.canvasAnimation.setPointFree({
+                    index:i,
+                    limit:80,
+                    speed:2
+                });
             }
+            console.log(this.canvasAnimation.points)
         },
         startRAF:function(){
             var _self = this;
@@ -289,7 +473,7 @@
             window.cancelAnimationFrame(this.RAF);
         },
         rand:function (min, max) {
-            return ~~(Math.random() * (max - min + 1) + min)
+            return (Math.round((Math.random() * (max - min + 1) + min)*100)/100)
         },
     };
 
