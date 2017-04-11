@@ -24,7 +24,7 @@
         this._hd = Math.PI / 180;//弧度
 
         this.focusLength = 300;//焦距
-        this.fixResult = false;//临时数据,3D坐标转2D坐标
+        this.buffer = {};//临时数据
         this.camera = {
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
@@ -87,7 +87,28 @@
            console.log(this.points)
        },
 
-        
+        taskWork:function(){
+            for(var i = 0;i<this.task.length;i++){
+                if(this.task[i].delay!= 0 && this.task[i].delayNow<this.task[i].delay){
+                    this.task[i].delayNow+=this.speed;
+                    return;
+                }//处理动画延迟,没到开启时间直接return
+
+                this.buffer = this.task[i].obj;
+                this.task[i].now+=this.speed;//动画的当前进度更新
+                for(var j=0;j<this.task[i].attr.length;j++){
+                    this.buffer[this.task[i].attr[j]] = this[this.task[i].type](this.task[i].now,
+                                                                                  this.task[i].start[this.task[i].attr[j]],
+                                                                                  this.task[i].end[this.task.attr[j]]-this.task[i].start[this.task[i].attr[j]],
+                                                                                  this.task[i].duration)
+                }
+                if(this.task[i].now == this.task[i].duration){//task完成
+                    this.points[i].inTask =  false;
+                    this.points[i].noTask =  true;
+                    this.task.splice(i,1);
+                }
+            }
+        },
         addPoint:function(config){
             /*config可选参数:
              * config = {
@@ -200,8 +221,8 @@
             config.index = config.index ? config.index:(function(){console.log("请确定需要做动画的点");return false;}());//要做动画的points[index]
             config.obj = config.obj ? config.obj : this.points[config.index];//即将做动画的属性来自于obj，默认从整个points数组中搜索
             config.isOver = false;//动画结束标志，默认未结束
-            config.now = config.now ? config.now:0;//运动进度,默认0
-            config.limit = config.limit ? config.limit:60;
+            config.now = config.now ? config.now:0;//运动进度,默认0开始
+            config.duration = config.duration ? config.duration:60;
             config.type = config.type ? config.type:"easeOut";//动画类型，默认easeOut
             config.callback = config.callback ? config.callback : false;//动画结束回调，默认无回调
             config.everyCallback = config.everyCallback ? config.everyCallback : false;//每一步动画的回调，默认无回调
@@ -241,6 +262,7 @@
             }
             config.obj.noTask = false;//有任务
             this.task.push(config);
+            console.log(this.task)
         },
         setPointFree:function(config){
             config = config ? config:{};
@@ -296,10 +318,13 @@
             this.setTime();
             this._ctx.clearRect(-this._canvas.width/2,-this._canvas.height/2,this._canvas.width,this._canvas.height);
             // this.setTime();
-            var i;
-            for(i = 0;i<this.points.length;i++){
+            this.taskWork();
+            for(var i = 0;i<this.points.length;i++){
                 this.freePoint(i);
-                this.fixResult = this.fixPoint(i);
+                // this.fixResult = this.fixPoint(i);
+                this.points[i].x = this.buffer.x;
+                this.points[i].y = this.buffer.y;
+                this.ctx.globalAlpha = this.buffer.opacity;
                 this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].x-this.points[i].width/2,this.points[i].y-this.points[i].height/2,this.points[i].width,this.points[i].height);
             }
             this.drawLines();
@@ -329,117 +354,115 @@
         getOne:function(){
             return ((Math.random()>0.5)?1:-1)
         },
-        T:{
-            linear:function(nowTime,startPosition,delta,duration){
-                return delta*nowTime/duration+startPosition;
-            },
+        linear:function(nowTime,startPosition,delta,duration){
+            return delta*nowTime/duration+startPosition;
+        },
 
-            easeOut:function(nowTime,startPosition,delta,duration){
-                return -delta*(nowTime/=duration)*(nowTime-2)+startPosition;
-            },
-            easeIn:function(nowTime,startPosition,delta,duration){
-                return delta*(nowTime/=duration)*nowTime+startPosition;
-            },
-            easeInOut:function(nowTime,startPosition,delta,duration){
-                return 1 > (nowTime /= duration / 2) ? delta / 2 * nowTime * nowTime + startPosition : -delta / 2 * (--nowTime * (nowTime - 2) - 1) + startPosition
-            },
+        easeOut:function(nowTime,startPosition,delta,duration){
+            return -delta*(nowTime/=duration)*(nowTime-2)+startPosition;
+        },
+        easeIn:function(nowTime,startPosition,delta,duration){
+            return delta*(nowTime/=duration)*nowTime+startPosition;
+        },
+        easeInOut:function(nowTime,startPosition,delta,duration){
+            return 1 > (nowTime /= duration / 2) ? delta / 2 * nowTime * nowTime + startPosition : -delta / 2 * (--nowTime * (nowTime - 2) - 1) + startPosition
+        },
 
-            easeInCubic:function (b,f,g,k) {
-                return g * (b /= k) * b * b + f;
-            },
-            easeOutCubic:function (b,f,g,k) {
-                return g * ((b = b / k - 1) * b * b + 1) + f;
-            },
-            easeInOutCubic:function (b,f,g,k) {
-                return 1 > (b /= k / 2) ? g / 2 * b * b * b + f : g / 2 * ((b -= 2) * b * b + 2) + f
-            },
+        easeInCubic:function (b,f,g,k) {
+            return g * (b /= k) * b * b + f;
+        },
+        easeOutCubic:function (b,f,g,k) {
+            return g * ((b = b / k - 1) * b * b + 1) + f;
+        },
+        easeInOutCubic:function (b,f,g,k) {
+            return 1 > (b /= k / 2) ? g / 2 * b * b * b + f : g / 2 * ((b -= 2) * b * b + 2) + f
+        },
 
-            easeInQuart:function (b,f,g,k) {
-                return g * (b /= k) * b * b * b + f
-            },
-            easeOutQuart:function (b,f,g,k) {
-                return -g * ((b = b / k - 1) * b * b * b - 1) + f
-            },
-            easeInOutQuart:function (b,f,g,k) {
-                return 1 > (b /= k / 2) ? g / 2 * b * b * b * b + f : -g / 2 * ((b -= 2) * b * b * b - 2) + f
-            },
+        easeInQuart:function (b,f,g,k) {
+            return g * (b /= k) * b * b * b + f
+        },
+        easeOutQuart:function (b,f,g,k) {
+            return -g * ((b = b / k - 1) * b * b * b - 1) + f
+        },
+        easeInOutQuart:function (b,f,g,k) {
+            return 1 > (b /= k / 2) ? g / 2 * b * b * b * b + f : -g / 2 * ((b -= 2) * b * b * b - 2) + f
+        },
 
-            easeInQuint:function (b,f,g,k) {
-                return g * (b /= k) * b * b * b * b + f
-            },
-            easeOutQuint:function (b,f,g,k) {
-                return g * ((b = b / k - 1) * b * b * b * b + 1) + f
-            },
-            easeInOutQuint:function (b,f,g,k) {
-                return 1 > (b /= k / 2) ? g / 2 * b * b * b * b * b + f : g / 2 * ((b -= 2) * b * b * b * b + 2) + f
-            },
-            
-            easeInSine:function (b,f,g,k) {
-                return -g * Math.cos(b / k * (Math.PI / 2)) + g + f
-            },
-            easeOutSine:function (b,f,g,k) {
-                return g * Math.sin(b / k * (Math.PI / 2)) + f
-            },
-            easeInOutSine:function (b,f,g,k) {
-                return -g / 2 * (Math.cos(Math.PI * b / k) - 1) + f
-            },
-            
-            easeInExpo:function (b,f,g,k) {
-                return 0 == b ? f : g * Math.pow(2, 10 * (b / k - 1)) + f
-            },
-            easeOutExpo:function (b,f,g,k) {
-                return b == k ? f + g : g * (-Math.pow(2, -10 * b / k) + 1) + f
-            },
-            easeInOutExpo:function (b,f,g,k) {
-                return 0 == b ? f : b == k ? f + g : 1 > (b /= k / 2) ? g / 2 * Math.pow(2, 10 * (b - 1)) + f : g / 2 * (-Math.pow(2, -10 * --b) + 2) + f
-            },
-            
-            easeInCirc:function (b, f, g, k) {
-                return -g * (Math.sqrt(1 - (b /= k) * b) - 1) + f
-            },
-            easeOutCirc:function (b, f, g, k) {
-                return g * Math.sqrt(1 - (b = b / k - 1) * b) + f
-            },
-            easeInOutCirc:function (b, f, g, k) {
-                return 1 > (b /= k / 2) ? -g / 2 * (Math.sqrt(1 - b * b) - 1) + f : g / 2 * (Math.sqrt(1 - (b -= 2) * b) + 1) + f
-            },
-            
-            easeInElastic:function (a, b, f, g, k) {
-                a = 0;
-                var n = g;
-                if (0 == b)return f;
-                if (1 == (b /= k))return f + g;
-                a || (a = .3 * k);
-                n < Math.abs(g) ? (n = g, g = a / 4) : g = a / (2 * Math.PI) * Math.asin(g / n);
-                return -(n * Math.pow(2, 10 * --b) * Math.sin(2 * (b * k - g) * Math.PI / a)) + f
-            },
-            easeOutElastic:function (a, b, f, g, k) {
-                var n = 0, A = g;
-                if (0 == b)return f;
-                if (1 == (b /= k))return f + g;
-                n || (n = .3 * k);
-                A < Math.abs(g) ? (A = g, a = n / 4) : a = n / (2 * Math.PI) * Math.asin(g / A);
-                return A * Math.pow(2, -10 * b) * Math.sin(2 * (b * k - a) * Math.PI / n) + g + f
-            },
-            easeInOutElastic:function (a, b, f, g, k) {
-                var n = 0, A = g;
-                if (0 == b)return f;
-                if (2 == (b /= k / 2))return f + g;
-                n || (n = .3 * k * 1.5);
-                A < Math.abs(g) ? (A = g, a = n / 4) : a = n / (2 * Math.PI) * Math.asin(g / A);
-                return 1 > b ? -.5 * A * Math.pow(2, 10 * --b) * Math.sin(2 * (b * k - a) * Math.PI / n) + f : A * Math.pow(2, -10 * --b) * Math.sin(2 * (b * k - a) * Math.PI / n) * .5 + g + f
-            },
-            
-            easeInBounce:function (a, b, f, g, k) {
-                return g - this.easeOutBounce(a, k - b, 0, g, k) + f
-            },
-            easeOutBounce:function (a, b, f, g, k) {
-                return (b /= k) < 1 / 2.75 ? 7.5625 * g * b * b + f : b < 2 / 2.75 ? g * (7.5625 * (b -= 1.5 / 2.75) * b + .75) + f : b < 2.5 / 2.75 ? g * (7.5625 * (b -= 2.25 / 2.75) * b + .9375) + f : g * (7.5625 * (b -= 2.625 / 2.75) * b + .984375) + f
-            },
-            easeInOutBounce:function (a, b, f, g, k) {
-                return b < k / 2 ? .5 * this.easeInBounce(a, 2 * b, 0, g, k) + f : .5 * this.easeOutBounce(a, 2 * b - k, 0, g, k) + .5 * g + f
-            },
-        }
+        easeInQuint:function (b,f,g,k) {
+            return g * (b /= k) * b * b * b * b + f
+        },
+        easeOutQuint:function (b,f,g,k) {
+            return g * ((b = b / k - 1) * b * b * b * b + 1) + f
+        },
+        easeInOutQuint:function (b,f,g,k) {
+            return 1 > (b /= k / 2) ? g / 2 * b * b * b * b * b + f : g / 2 * ((b -= 2) * b * b * b * b + 2) + f
+        },
+
+        easeInSine:function (b,f,g,k) {
+            return -g * Math.cos(b / k * (Math.PI / 2)) + g + f
+        },
+        easeOutSine:function (b,f,g,k) {
+            return g * Math.sin(b / k * (Math.PI / 2)) + f
+        },
+        easeInOutSine:function (b,f,g,k) {
+            return -g / 2 * (Math.cos(Math.PI * b / k) - 1) + f
+        },
+
+        easeInExpo:function (b,f,g,k) {
+            return 0 == b ? f : g * Math.pow(2, 10 * (b / k - 1)) + f
+        },
+        easeOutExpo:function (b,f,g,k) {
+            return b == k ? f + g : g * (-Math.pow(2, -10 * b / k) + 1) + f
+        },
+        easeInOutExpo:function (b,f,g,k) {
+            return 0 == b ? f : b == k ? f + g : 1 > (b /= k / 2) ? g / 2 * Math.pow(2, 10 * (b - 1)) + f : g / 2 * (-Math.pow(2, -10 * --b) + 2) + f
+        },
+
+        easeInCirc:function (b, f, g, k) {
+            return -g * (Math.sqrt(1 - (b /= k) * b) - 1) + f
+        },
+        easeOutCirc:function (b, f, g, k) {
+            return g * Math.sqrt(1 - (b = b / k - 1) * b) + f
+        },
+        easeInOutCirc:function (b, f, g, k) {
+            return 1 > (b /= k / 2) ? -g / 2 * (Math.sqrt(1 - b * b) - 1) + f : g / 2 * (Math.sqrt(1 - (b -= 2) * b) + 1) + f
+        },
+
+        easeInElastic:function (a, b, f, g, k) {
+            a = 0;
+            var n = g;
+            if (0 == b)return f;
+            if (1 == (b /= k))return f + g;
+            a || (a = .3 * k);
+            n < Math.abs(g) ? (n = g, g = a / 4) : g = a / (2 * Math.PI) * Math.asin(g / n);
+            return -(n * Math.pow(2, 10 * --b) * Math.sin(2 * (b * k - g) * Math.PI / a)) + f
+        },
+        easeOutElastic:function (a, b, f, g, k) {
+            var n = 0, A = g;
+            if (0 == b)return f;
+            if (1 == (b /= k))return f + g;
+            n || (n = .3 * k);
+            A < Math.abs(g) ? (A = g, a = n / 4) : a = n / (2 * Math.PI) * Math.asin(g / A);
+            return A * Math.pow(2, -10 * b) * Math.sin(2 * (b * k - a) * Math.PI / n) + g + f
+        },
+        easeInOutElastic:function (a, b, f, g, k) {
+            var n = 0, A = g;
+            if (0 == b)return f;
+            if (2 == (b /= k / 2))return f + g;
+            n || (n = .3 * k * 1.5);
+            A < Math.abs(g) ? (A = g, a = n / 4) : a = n / (2 * Math.PI) * Math.asin(g / A);
+            return 1 > b ? -.5 * A * Math.pow(2, 10 * --b) * Math.sin(2 * (b * k - a) * Math.PI / n) + f : A * Math.pow(2, -10 * --b) * Math.sin(2 * (b * k - a) * Math.PI / n) * .5 + g + f
+        },
+
+        easeInBounce:function (a, b, f, g, k) {
+            return g - this.easeOutBounce(a, k - b, 0, g, k) + f
+        },
+        easeOutBounce:function (a, b, f, g, k) {
+            return (b /= k) < 1 / 2.75 ? 7.5625 * g * b * b + f : b < 2 / 2.75 ? g * (7.5625 * (b -= 1.5 / 2.75) * b + .75) + f : b < 2.5 / 2.75 ? g * (7.5625 * (b -= 2.25 / 2.75) * b + .9375) + f : g * (7.5625 * (b -= 2.625 / 2.75) * b + .984375) + f
+        },
+        easeInOutBounce:function (a, b, f, g, k) {
+            return b < k / 2 ? .5 * this.easeInBounce(a, 2 * b, 0, g, k) + f : .5 * this.easeOutBounce(a, 2 * b - k, 0, g, k) + .5 * g + f
+        },
     };
     var main = function(){
         this.canvasAnimation = undefined;
@@ -476,14 +499,16 @@
             _self.RAF = r(loop);
         },
         backToStart:function(){
-            // var _self = this;
-            // setTimeout(function(){
-            //     for(var i=8;v)
-            //     _self.canvasAnimation.addPointTask({
-            //         attr:["y","y"],
-            //         start:{}
-            //     })
-            // },3000);
+            var _self = this;
+            setTimeout(function(){
+                for(var i=8;i<_self.canvasAnimation.points.length;i++)
+                _self.canvasAnimation.addPointTask({
+                    index:i,
+                    attr:["x","y"],
+                    start:{x:_self.canvasAnimation.points[i].x,y:_self.canvasAnimation.points[i].y},
+                    end:{x:0,y:0}
+                })
+            },3000);
 
         },
         stopRAF:function(){
@@ -497,4 +522,5 @@
     var app = new main();//添加一个canvasAnimation实例
     app.start();//自定义主流程内容，可操控canvasAnimation实例
     app.startRAF();//开始渲染
+    app.backToStart();
 // })();
