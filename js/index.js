@@ -232,8 +232,15 @@
                     return;
                 }
             }
-            
-            this.task.push();
+
+            if(config.attr.length == 1&&config.attr[0]=="opacity"){
+                config.obj.inTask = false;//改变透明度不算任务，标记为任务未执行
+            }
+            else{
+                config.obj.inTask = true;//标记为任务执行
+            }
+            config.obj.noTask = false;//有任务
+            this.task.push(config);
         },
         setPointFree:function(config){
             config = config ? config:{};
@@ -438,7 +445,6 @@
         this.canvasAnimation = undefined;
         this.RAF = 0;
         this.init();
-
     };
     main.prototype = {
         init:function(){
@@ -468,6 +474,17 @@
             };
             var r = this.canvasAnimation.requestAnimationFrame();
             _self.RAF = r(loop);
+        },
+        backToStart:function(){
+            // var _self = this;
+            // setTimeout(function(){
+            //     for(var i=8;v)
+            //     _self.canvasAnimation.addPointTask({
+            //         attr:["y","y"],
+            //         start:{}
+            //     })
+            // },3000);
+
         },
         stopRAF:function(){
             window.cancelAnimationFrame(this.RAF);
