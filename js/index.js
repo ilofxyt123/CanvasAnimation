@@ -132,13 +132,13 @@
              *   free.speed:{x,y,z}//自由粒子速度,默认0,0,0
              *   free.speedSpace:0//!!!!!!!!!!!!!!未知，默认为0,0,0
              *   
-             *   valid:true//!!!!!!!!!!!!!!未知，初始为true
+             *   valid:true//验证点是否还需要绘制，如果超出边界则标记为false
              *   inTask:false//粒子是否在动画中，初始给false
-             *   noTask:false//!!!!!!!!!!!!!!未知，初始给false
+             *   noTask:false//粒子是否有动画任务，初始给false，如果在delay中，则标记为true
              *   opacityTask:false//!!!!!!!!!!!!!!未知，默认为
              *   buffer2D:{x:0,y:0}//3D转2D坐标，初始化0,0
              *   trail:0//!!!!!!!!!!!!!!轨迹，默认为0
-             *   offset:0//!!!!!!!!!!!!!!未知
+             *   offset:0//点位偏移，默认无偏移
              *   fadeIn:0//!!!!!!!!!!!!!!未知
              *   fadeOut:0//!!!!!!!!!!!!!!未知
              *   moveTo:0//!!!!!!!!!!!!!!未知
@@ -313,19 +313,75 @@
         fixPoint:function(index){
             if(this.points[index].flag==false){return;};
             var point = this.points[index];
+            this.buffer = this.camera_rotate(point.x,point.y,point.z);
+            this.buffer = this.change2D(this.buffer.x+point.offset.x,this.buffer.y+point.offset.y,this.buffer.z+point.offset.z,this.focusLength);
+            if((this.buffer.x+point.width*this.buffer.scale)<-this._w/2||this.buffer.x>this._w/2||(this.buffer.y+point.height*this.buffer.scale)<-this._h/2||this.buffer.y>this._h/2){//左边界、右边界、上边界、下边界监测
+                return  {
+                            x:this.buffer.x,
+                            y:this.buffer.y,
+                            opacity:point.opacity,
+                            width:this.buffer.width*this.buffer.scale,
+                            height:this.buffer.height*this.buffer.scale
+                        };
+            }
+        },
+        change2D:function(x,y,z,distance){
+
+        },
+        camera_rotate:function(x,y,z){
+            this.camera.buffer.distance.x = x - this.camera.position.x;
+            this.camera.buffer.distance.y = this.camera.position.y - y;
+            this.camera.buffer.distance.z = this.camera.position.z - z;
+
+            this.camera.buffer.temp = {x: 0, y: 0, z: 0};
+
+            this.camera.buffer.rotation.x = this.camera.rotation.x * this.hd;
+            this.camera.buffer.rotation.y = this.camera.rotation.y * this.hd;
+            this.camera.buffer.rotation.z = this.camera.rotation.z * this.hd;
+
+            this.camera.buffer.temp.x = Math.cos(this.camera.buffer.rotation.y) * this.camera.buffer.distance.x - Math.sin(this.camera.buffer.rotation.y) * this.camera.buffer.distance.z;
+            this.camera.buffer.temp.z = Math.sin(this.camera.buffer.rotation.y) * this.camera.buffer.distance.x + Math.cos(this.camera.buffer.rotation.y) * this.camera.buffer.distance.z;
+
+            this.camera.buffer.distance.x = this.camera.buffer.temp.x;
+            this.camera.buffer.distance.z = this.camera.buffer.temp.z;
+
+            this.camera.buffer.temp.y = Math.cos(this.camera.buffer.rotation.x) * this.camera.buffer.distance.y - Math.sin(this.camera.buffer.rotation.x) * this.camera.buffer.distance.z;
+            this.camera.buffer.temp.z = Math.sin(this.camera.buffer.rotation.x) * this.camera.buffer.distance.y + Math.cos(this.camera.buffer.rotation.x) * this.camera.buffer.distance.z;
+
+            this.camera.buffer.distance.y = this.camera.buffer.temp.y;
+            this.camera.buffer.distance.z = this.camera.buffer.temp.z;
+
+            this.camera.buffer.temp.x = Math.cos(this.camera.buffer.rotation.z) * this.camera.buffer.distance.x - Math.sin(this.camera.buffer.rotation.z) * this.camera.buffer.distance.y;
+            this.camera.buffer.temp.y = Math.sin(this.camera.buffer.rotation.z) * this.camera.buffer.distance.x + Math.cos(this.camera.buffer.rotation.z) * this.camera.buffer.distance.y;
+            
+            this.camera.buffer.distance.x = this.camera.buffer.temp.x;
+            this.camera.buffer.distance.y = this.camera.buffer.temp.y;
+            return {x: this.camera.buffer.distance.x, y: this.camera.buffer.distance.y, z: this.camera.buffer.distance.z}
         },
         draw:function(){
             this.setTime();
             this._ctx.clearRect(-this._canvas.width/2,-this._canvas.height/2,this._canvas.width,this._canvas.height);
             // this.setTime();
             this.taskWork();
+            
             for(var i = 0;i<this.points.length;i++){
                 this.freePoint(i);
+                this.buffer = this.fixPoint(i);
                 // this.fixResult = this.fixPoint(i);
-                this.points[i].x = this.buffer.x;
-                this.points[i].y = this.buffer.y;
+                this.points[i].buffer2D.x = this.buffer.x;
+                this.points[i].buffer2D.y = this.buffer.y;
+                
+                if(!this.buffer){this.points[i].valid = false;return;};//边界监测未通过，不需要绘制，跳出渲染
+                
+                this.points[i].valid = true;//粒子需要绘制，边界监测通过
                 this.ctx.globalAlpha = this.buffer.opacity;
-                this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].x-this.points[i].width/2,this.points[i].y-this.points[i].height/2,this.points[i].width,this.points[i].height);
+                if(this.points[i].rotate!=0){
+                    this.ctx.save();
+                    this.ctx.translate(this.points[i].buffer2D.x,this.points[i].buffer2D.y);
+                    this.ctx.rotate(this._hd*this.points[i].rotate);
+                    this.ctx.translate(-this.points[i].buffer2D.x,-this.points[i].buffer2D.y)
+                }
+                this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].buffer2D.x-this.buffer.width/2,this.points[i].buffer2D.y-this.buffer.height/2,this.buffer.width,this.buffer.height);
             }
             this.drawLines();
         },//绘制一帧
