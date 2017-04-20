@@ -47,6 +47,8 @@
         this.offsetTime = this.nowTime = this.lastTime = undefined;//时间偏移量，此刻时间，上一次时间
         this.speed = 1;//全局动画速度
 
+        this.consoleTime = 0;
+
     };
     CanvasAnimation.prototype = {
         constructor:CanvasAnimation,
@@ -77,14 +79,15 @@
                     z:0,
                     width:config.width == "normal" ? this.pointWidth:config.width,//如果宽度不给，均为10;如果给了宽，则可选是否随机
                     height:config.height == "normal" ? this.pointHeight:config.height,
-                    flag:false,
+                    flag:true,
                     opacity: "normal" == config.opacity ? 1 : this.rand(0, 10) / 10
                 });
                 if(config.sizeSame){
                     this.points[this.points.length-1].width = this.points[this.points.length-1].height;
                 }
             }
-           console.log(this.points)
+
+           console.log("this.points:"+this.points)
        },
 
         taskWork:function(){
@@ -173,7 +176,7 @@
             config.inTask = false;
             config.noTask = false;
             // config.opacityTask = false;
-            config.buffer2D = {x: 0, y: 0};
+            config.buffer2D={x: 0,y: 0};
             config.trail = config.trail ? config.trail : false;
             config.offset = {x: 0, y: 0, z: 0};
             // config.fadeIn = function (a) {
@@ -314,7 +317,9 @@
             if(this.points[index].flag==false){return;};
             var point = this.points[index];
             this.buffer = this.camera_rotate(point.x,point.y,point.z);
+
             this.buffer = this.change2D(this.buffer.x+point.offset.x,this.buffer.y+point.offset.y,this.buffer.z+point.offset.z,this.focusLength);
+            // console.log("this.buffer after this.change2D:"+this.buffer);
             if((this.buffer.x+point.width*this.buffer.scale)<-this._w/2||this.buffer.x>this._w/2||(this.buffer.y+point.height*this.buffer.scale)<-this._h/2||this.buffer.y>this._h/2){//左边界、右边界、上边界、下边界监测
                 return  {
                             x:this.buffer.x,
@@ -324,9 +329,11 @@
                             height:this.buffer.height*this.buffer.scale
                         };
             }
+            else{return false;}
         },
         change2D:function(x,y,z,distance){
-
+            var scale = distance / (distance + z);
+            return 0 < scale ? {x: x * scale, y: y * scale, scale: scale} : {x: 10 * -this.win_w, y: 10 * -this.win_h}
         },
         camera_rotate:function(x,y,z){
             this.camera.buffer.distance.x = x - this.camera.position.x;
@@ -335,9 +342,9 @@
 
             this.camera.buffer.temp = {x: 0, y: 0, z: 0};
 
-            this.camera.buffer.rotation.x = this.camera.rotation.x * this.hd;
-            this.camera.buffer.rotation.y = this.camera.rotation.y * this.hd;
-            this.camera.buffer.rotation.z = this.camera.rotation.z * this.hd;
+            this.camera.buffer.rotation.x = this.camera.rotation.x * this._hd;
+            this.camera.buffer.rotation.y = this.camera.rotation.y * this._hd;
+            this.camera.buffer.rotation.z = this.camera.rotation.z * this._hd;
 
             this.camera.buffer.temp.x = Math.cos(this.camera.buffer.rotation.y) * this.camera.buffer.distance.x - Math.sin(this.camera.buffer.rotation.y) * this.camera.buffer.distance.z;
             this.camera.buffer.temp.z = Math.sin(this.camera.buffer.rotation.y) * this.camera.buffer.distance.x + Math.cos(this.camera.buffer.rotation.y) * this.camera.buffer.distance.z;
@@ -353,20 +360,27 @@
 
             this.camera.buffer.temp.x = Math.cos(this.camera.buffer.rotation.z) * this.camera.buffer.distance.x - Math.sin(this.camera.buffer.rotation.z) * this.camera.buffer.distance.y;
             this.camera.buffer.temp.y = Math.sin(this.camera.buffer.rotation.z) * this.camera.buffer.distance.x + Math.cos(this.camera.buffer.rotation.z) * this.camera.buffer.distance.y;
-            
+
             this.camera.buffer.distance.x = this.camera.buffer.temp.x;
             this.camera.buffer.distance.y = this.camera.buffer.temp.y;
             return {x: this.camera.buffer.distance.x, y: this.camera.buffer.distance.y, z: this.camera.buffer.distance.z}
         },
         draw:function(){
+
             this.setTime();
             this._ctx.clearRect(-this._canvas.width/2,-this._canvas.height/2,this._canvas.width,this._canvas.height);
             // this.setTime();
-            this.taskWork();
+            // this.taskWork();
             
             for(var i = 0;i<this.points.length;i++){
                 this.freePoint(i);
                 this.buffer = this.fixPoint(i);
+                if(this.consoleTime<2){
+                    console.log(this.buffer);
+                    console.log(this.points);
+                    this.consoleTime++;
+                }
+                // console.log(this.buffer)
                 // this.fixResult = this.fixPoint(i);
                 this.points[i].buffer2D.x = this.buffer.x;
                 this.points[i].buffer2D.y = this.buffer.y;
@@ -543,7 +557,7 @@
                     speed:2
                 });
             }
-            console.log(this.canvasAnimation.points)
+            console.log("this.canvasAnimation.points:"+this.canvasAnimation.points)
         },
         startRAF:function(){
             var _self = this;
