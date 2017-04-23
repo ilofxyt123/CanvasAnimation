@@ -1,7 +1,7 @@
 /**
  * Created by Z on 2016/10/9.
  */
-// (function(){
+(function(win){
     var CanvasAnimation = function(config){
         config = config ? config:{}
         /*config可选参数:
@@ -87,7 +87,7 @@
                 }
             }
 
-           console.log("this.points:"+this.points)
+           // console.log("this.points:"+this.points)
        },
 
         taskWork:function(){
@@ -97,19 +97,21 @@
                     return;
                 }//处理动画延迟,没到开启时间直接return
 
-                this.buffer = this.task[i].obj;
-                this.task[i].now+=this.speed;//动画的当前进度更新
-                for(var j=0;j<this.task[i].attr.length;j++){
-                    this.buffer[this.task[i].attr[j]] = this[this.task[i].type](this.task[i].now,
-                                                                                  this.task[i].start[this.task[i].attr[j]],
-                                                                                  this.task[i].end[this.task.attr[j]]-this.task[i].start[this.task[i].attr[j]],
-                                                                                  this.task[i].duration)
-                }
                 if(this.task[i].now == this.task[i].duration){//task完成
                     this.points[i].inTask =  false;
                     this.points[i].noTask =  true;
                     this.task.splice(i,1);
+                    return;
                 }
+
+                this.task[i].now+=this.speed;//动画的当前进度更新
+                for(var j=0;j<this.task[i].attr.length;j++){//参数运动的属性数量
+                    this.task[i].obj[this.task[i].attr[j]] = this[this.task[i].type](this.task[i].now,
+                                                                                  this.task[i].start[this.task[i].attr[j]],
+                                                                                  this.task[i].end[this.task[i].attr[j]]-this.task[i].start[this.task[i].attr[j]],
+                                                                                  this.task[i].duration)
+                }
+
             }
         },
         addPoint:function(config){
@@ -221,12 +223,11 @@
         },
         addPointTask:function(config){
             config = config ? config:{};
-            config.index = config.index ? config.index:(function(){console.log("请确定需要做动画的点");return false;}());//要做动画的points[index]
+            config.index = "number" == (typeof config.index) ? config.index:(function(){console.log("请确定需要做动画的点");return false;}());//要做动画的points[index]
             config.obj = config.obj ? config.obj : this.points[config.index];//即将做动画的属性来自于obj，默认从整个points数组中搜索
             config.isOver = false;//动画结束标志，默认未结束
-            config.now = config.now ? config.now:0;//运动进度,默认0开始
-            config.duration = config.duration ? config.duration:60;
-            config.type = config.type ? config.type:"easeOut";//动画类型，默认easeOut
+
+
             config.callback = config.callback ? config.callback : false;//动画结束回调，默认无回调
             config.everyCallback = config.everyCallback ? config.everyCallback : false;//每一步动画的回调，默认无回调
             config.delay = config.delay ? config.delay : 0;//动画延时时间，默认不延迟
@@ -239,13 +240,18 @@
 
             config.bezierData = config.bezierData ? config.bezierData : false;
             config.bezierFlag = false;//是否为贝塞尔运动
+
+
+            config.now = config.now ? config.now:0;//运动进度,默认0开始
+            config.duration = config.duration ? config.duration:60;
+            config.type = config.type ? config.type:"easeOut";//动画类型，默认easeOut
+            config.attr = config.attr ? config.attr : ["x","y","z"];//需要做动画的属性数组，默认为x,y,z
+            config.start = config.start ? config.start : {};//需要做动画的属性的起始点
+            config.end = config.end ? config.end : {};//需要做动画的属性的终点
             if("bezier" == config.type.substr(0,6)){
                 config.bezierFlag = true;
                 config.attr = ["x","y","z"];
             };
-            config.attr = config.attr ? config.attr : ["x","y","z"];//需要做动画的属性数组，默认为x,y,z
-            config.start = config.start ? config.start : {};//需要做动画的属性的起始点
-            config.end = config.end ? config.end : {};//需要做动画的属性的终点
 
             for(var l= 0;l < config.attr.length;l++){//检测要做动画的属性，起点终点添加是否正确
                 if(config.start[config.attr[l]] == undefined){
@@ -265,7 +271,7 @@
             }
             config.obj.noTask = false;//有任务
             this.task.push(config);
-            console.log(this.task)
+            // console.log(this.task)
         },
         setPointFree:function(config){
             config = config ? config:{};
@@ -294,42 +300,43 @@
             }
         },
         freePoint:function(index){
-            var point = this.points[index];
-            if(point.free.flag == false || point.inTask){return;};//非自由粒子跳出function
 
-            point.x+=point.free.speed.x;
-            point.y+=point.free.speed.y;
-            if(point.free.zFlag == true){point.z+=point.free.speed.z;}
-            point.free.now+=this.speed;
+            if(this.points[index].free.flag == false || this.points[index].inTask){return;};//非自由粒子跳出function
 
-            if(point.free.now>=point.free.limit){
-                point.free.now = 0;
-                point.free.limit = this.rand(point.free.limitSpace/2,point.free.limitSpace);
-                point.free.speed = {
-                    x:point.free.speed.x*=this.getOne(),
-                    y:point.free.speed.y*=this.getOne(),
-                    z:point.free.speed.z*=this.getOne()
+            this.points[index].x+=this.points[index].free.speed.x;
+            this.points[index].y+=this.points[index].free.speed.y;
+            if(this.points[index].free.zFlag == true){this.points[index].z+=this.points[index].free.speed.z;}
+            this.points[index].free.now+=this.speed;
+
+            if(this.points[index].free.now>=this.points[index].free.limit){//到终点了
+                this.points[index].free.now = 0;
+                this.points[index].free.limit = this.rand(this.points[index].free.limitSpace/2,this.points[index].free.limitSpace);
+                this.points[index].free.speed = {
+                    x:this.points[index].free.speed.x*=this.getOne(),
+                    y:this.points[index].free.speed.y*=this.getOne(),
+                    z:this.points[index].free.speed.z*=this.getOne()
                 }
             }
 
         },
         fixPoint:function(index){
             if(this.points[index].flag==false){return;};
-            var point = this.points[index];
-            this.buffer = this.camera_rotate(point.x,point.y,point.z);
 
-            this.buffer = this.change2D(this.buffer.x+point.offset.x,this.buffer.y+point.offset.y,this.buffer.z+point.offset.z,this.focusLength);
-            // console.log("this.buffer after this.change2D:"+this.buffer);
-            if((this.buffer.x+point.width*this.buffer.scale)<-this._w/2||this.buffer.x>this._w/2||(this.buffer.y+point.height*this.buffer.scale)<-this._h/2||this.buffer.y>this._h/2){//左边界、右边界、上边界、下边界监测
-                return  {
-                            x:this.buffer.x,
-                            y:this.buffer.y,
-                            opacity:point.opacity,
-                            width:this.buffer.width*this.buffer.scale,
-                            height:this.buffer.height*this.buffer.scale
-                        };
+            this.buffer = this.camera_rotate(this.points[index].x,this.points[index].y,this.points[index].z);
+
+            this.buffer = this.change2D(this.buffer.x+this.points[index].offset.x,this.buffer.y+this.points[index].offset.y,this.buffer.z+this.points[index].offset.z,this.focusLength);
+            if((this.buffer.x+this.points[index].width*this.buffer.scale)<-this._w/2||this.buffer.x>this._w/2||(this.buffer.y+this.points[index].height*this.buffer.scale)<-this._h/2||this.buffer.y>this._h/2){//左边界、右边界、上边界、下边界监测
+                return  false;
             }
-            else{return false;}
+            else{
+                return  {
+                    x:this.buffer.x,
+                    y:this.buffer.y,
+                    opacity:this.points[index].opacity,
+                    width:this.points[index].width*this.buffer.scale,
+                    height:this.points[index].height*this.buffer.scale
+                };
+            }
         },
         change2D:function(x,y,z,distance){
             var scale = distance / (distance + z);
@@ -370,30 +377,33 @@
             this.setTime();
             this._ctx.clearRect(-this._canvas.width/2,-this._canvas.height/2,this._canvas.width,this._canvas.height);
             // this.setTime();
-            // this.taskWork();
+            this.taskWork();
             
             for(var i = 0;i<this.points.length;i++){
                 this.freePoint(i);
                 this.buffer = this.fixPoint(i);
-                if(this.consoleTime<2){
-                    console.log(this.buffer);
-                    console.log(this.points);
+                if(this.consoleTime<this.points.length){//测试输出
+                    // console.log(this.buffer);
+                    // console.log(this.points);
                     this.consoleTime++;
                 }
                 // console.log(this.buffer)
                 // this.fixResult = this.fixPoint(i);
+
+
+
+                if(!this.buffer){this.points[i].valid = false;return;};//边界监测未通过，不需要绘制，跳出渲染
+
                 this.points[i].buffer2D.x = this.buffer.x;
                 this.points[i].buffer2D.y = this.buffer.y;
-                
-                if(!this.buffer){this.points[i].valid = false;return;};//边界监测未通过，不需要绘制，跳出渲染
-                
+
                 this.points[i].valid = true;//粒子需要绘制，边界监测通过
-                this.ctx.globalAlpha = this.buffer.opacity;
+                this._ctx.globalAlpha = this.buffer.opacity;
                 if(this.points[i].rotate!=0){
-                    this.ctx.save();
-                    this.ctx.translate(this.points[i].buffer2D.x,this.points[i].buffer2D.y);
-                    this.ctx.rotate(this._hd*this.points[i].rotate);
-                    this.ctx.translate(-this.points[i].buffer2D.x,-this.points[i].buffer2D.y)
+                    this._ctx.save();
+                    this._ctx.translate(this.points[i].buffer2D.x,this.points[i].buffer2D.y);
+                    this._ctx.rotate(this._hd*this.points[i].rotate);
+                    this._ctx.translate(-this.points[i].buffer2D.x,-this.points[i].buffer2D.y)
                 }
                 this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].buffer2D.x-this.buffer.width/2,this.points[i].buffer2D.y-this.buffer.height/2,this.buffer.width,this.buffer.height);
             }
@@ -534,11 +544,12 @@
             return b < k / 2 ? .5 * this.easeInBounce(a, 2 * b, 0, g, k) + f : .5 * this.easeOutBounce(a, 2 * b - k, 0, g, k) + .5 * g + f
         },
     };
+
     var main = function(){
         this.canvasAnimation = undefined;
         this.RAF = 0;
         this.init();
-    };
+    };//对CanvasAnimation做了测试，各个使用范例
     main.prototype = {
         init:function(){
             this.canvasAnimation = new CanvasAnimation({
@@ -546,19 +557,25 @@
                 // pointId:"point",
             });
         },
+
+        /*********************************程序入口*********************************/
         start:function(){
             this.canvasAnimation.init({
                 pointNumber:11,
             });
-            for(var i=8;i<this.canvasAnimation.points.length;i++){
+            for(var i=0;i<this.canvasAnimation.points.length;i++){
                 this.canvasAnimation.setPointFree({
                     index:i,
-                    limit:80,
-                    speed:2
+                    limit:60,
+                    speed:1,
+                    zFlag:true
                 });
             }
-            console.log("this.canvasAnimation.points:"+this.canvasAnimation.points)
+            // console.log("this.canvasAnimation.points:"+this.canvasAnimation.points)
         },
+        /*********************************程序入口*********************************/
+
+        /*********************************渲染开关*********************************/
         startRAF:function(){
             var _self = this;
             var loop = function(){
@@ -568,29 +585,45 @@
             var r = this.canvasAnimation.requestAnimationFrame();
             _self.RAF = r(loop);
         },
-        backToStart:function(){
-            var _self = this;
-            setTimeout(function(){
-                for(var i=8;i<_self.canvasAnimation.points.length;i++)
-                _self.canvasAnimation.addPointTask({
-                    index:i,
-                    attr:["x","y"],
-                    start:{x:_self.canvasAnimation.points[i].x,y:_self.canvasAnimation.points[i].y},
-                    end:{x:0,y:0}
-                })
-            },3000);
-
-        },
         stopRAF:function(){
             window.cancelAnimationFrame(this.RAF);
         },
+        /*********************************渲染开关*********************************/
+
+
+        /*********************************功能业务*********************************/
+        backToStart:function(){
+            var _self = this;
+            console.log(_self.canvasAnimation.points.length)
+            setTimeout(function(){
+                var i ;
+                for(i=0;i<10;i++){
+                    console.log(i)
+                    _self.canvasAnimation.addPointTask({
+                        index:i,
+                        attr:["x","y","z"],
+                        start:{x:_self.canvasAnimation.points[i].x,y:_self.canvasAnimation.points[i].y,z:_self.canvasAnimation.points[i].z},
+                        end:{x:0,y:0,z:0}
+                    })
+                }
+            },5000);
+
+        },//点回到出发点
+        /*********************************功能业务*********************************/
+
+        /*********************************工具函数*********************************/
         rand:function (min, max) {
             return (Math.round((Math.random() * (max - min + 1) + min)*100)/100)
         },
+        /*********************************工具函数*********************************/
     };
 
     var app = new main();//添加一个canvasAnimation实例
+
     app.start();//自定义主流程内容，可操控canvasAnimation实例
+
     app.startRAF();//开始渲染
     app.backToStart();
-// })();
+
+    win.test = app;
+})(window);
