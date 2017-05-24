@@ -65,7 +65,7 @@
         this._ctx.translate(this._w/2,this._h/2);
         /*********************************初始化canvas*********************************/
 
-        this.pointImageId = config.pointId ? config.pointId:"point";//粒子图片
+        this.pointImageId = config.pointId ? config.pointId:"point1";//粒子图片
         this.pointObj = this.pointImageId ? this.getDom(this.pointImageId):undefined;//粒子对象,dom/canvas
         this.pointHeight = this.pointWidth = 10;//粒子默认宽高10
 
@@ -73,7 +73,7 @@
             return console.log("粒子图片缺失");
         }
         config.pointNumber = config.pointNumber ? config.pointNumber : 10;
-        config.opacity = config.opacity ? config.opacity : "normal";
+        config.opacity = typeof config.opacity == "number" ? config.opacity : 1;
         config.width = config.width ? config.width : "normal";
         config.height = config.height ? config.height : "normal";
         config.sizeSame = "boolean" == typeof config.sizeSame ? config.sizeSame : true;
@@ -86,7 +86,7 @@
                 width:config.width == "normal" ? this.pointWidth:config.width,//如果宽度不给，均为10;如果给了宽，则可选是否随机
                 height:config.height == "normal" ? this.pointHeight:config.height,
                 flag:true,
-                opacity: "normal" == config.opacity ? 1 : this.rand(0, 10) / 10
+                opacity: config.opacity ,
             });
             if(config.sizeSame){
                 this.points[this.points.length-1].width = this.points[this.points.length-1].height;
@@ -224,7 +224,8 @@
 
 
         config.now = config.now ? config.now:0;//运动进度,默认0开始
-        config.duration = config.duration ? config.duration:60;
+        config.duration = config.duration ? config.duration:60;//动画总进度默认60
+        config.speed = config.speed ? config.speed : this.speed;//每次刷新改变进度值，默认为全局速度1
         config.type = config.type ? config.type:"easeOut";//动画类型，默认easeOut
         config.attr = config.attr ? config.attr : ["x","y","z"];//需要做动画的属性数组，默认为x,y,z
         config.start = config.start ? config.start : {};//需要做动画的属性的起始点
@@ -252,7 +253,7 @@
         }
         config.obj.noTask = false;//有任务
         this.task.push(config);
-        // console.log(this.task)
+
         config = null;
     };
     CanvasAnimation.setPointFree = function(config){
@@ -355,10 +356,10 @@
     CanvasAnimation.taskWork = function(){
         for(var i = 0;i<this.task.length;i++){
             if(this.task[i].delay!= 0 && this.task[i].delayNow<this.task[i].delay){
-                this.task[i].delayNow+=this.speed;
+                this.task[i].delayNow+=this.task[i].speed;
                 continue;
             }//处理动画延迟,没到开启时间直接return
-            this.task[i].now+=this.speed;//动画的当前进度更新
+            this.task[i].now+=this.task[i].speed;//动画的当前进度更新
             for(var j=0;j<this.task[i].attr.length;j++){//参数运动的属性数量
                 this.task[i].obj[this.task[i].attr[j]] = this[this.task[i].type](this.task[i].now,
                     this.task[i].start[this.task[i].attr[j]],
@@ -369,7 +370,7 @@
                 this.task[i].obj.inTask = false;
                 this.task[i].obj.noTask = true;
                 if(!!this.task[i].callback){
-                    this.task[i].callback.call(this,i);
+                    this.task[i].callback();
                 }
                 this.task.splice(i,1);
             }
@@ -401,14 +402,6 @@
 
                 this.points[i].valid = true;//粒子需要绘制，边界监测通过
                 this._ctx.globalAlpha = this.buffer.opacity;
-
-                if(this.points[i].rotate!=0){
-                    this._ctx.save();
-                    this._ctx.translate(this.points[i].buffer2D.x,this.points[i].buffer2D.y);
-                    this._ctx.rotate(this._hd*this.points[i].rotate);
-                    this._ctx.translate(-this.points[i].buffer2D.x,-this.points[i].buffer2D.y)
-                }
-
                 this._ctx.drawImage(this.pointObj,0,0,this.pointObj.width,this.pointObj.height,this.points[i].buffer2D.x-this.buffer.width/2,this.points[i].buffer2D.y-this.buffer.height/2,this.buffer.width,this.buffer.height);
 
             }
@@ -441,13 +434,13 @@
     };
 
     CanvasAnimation.setTime = function(){
+        this.nowTime = this.getTime();
         if(this.lastTime){
-            this.nowTime = this.getTime();
             this.offsetTime = this.nowTime-this.lastTime;//一般而言刷新频率每秒60次，offsetTime为17毫秒
             this.lastTime = this.nowTime;
             return;
         }
-        this.lastTime = this.getTime();;
+        this.lastTime = this.getTime();
     };
     CanvasAnimation.getDom = function(ID){
         return document.getElementById(ID);
@@ -574,110 +567,117 @@
 
 
 
-    var main = function(){
-        this.CA = undefined;
+    var main = new function(){
         this.RAF = 0;
-        this.init();
     };//对CanvasAnimation做了测试，各个使用范例
-    main.prototype = {
-        init:function(){
-            this.CA = CanvasAnimation
-        },
-
-        /*********************************程序入口*********************************/
-        start:function(){
-            this.CA.init({
-                pointNumber:100,
+    main.init = function(){
+        CanvasAnimation.init({
+            pointNumber:100,
+            opacity:0
+        });
+    };
+    /*********************************程序入口*********************************/
+    main.start = function(){
+        for(var i = 0;i < CanvasAnimation.points.length;i++){
+            CanvasAnimation.setPointFree({
+                index:i,
+                limit:120,
+                speed:1,
+                zFlag:true
             });
-            for(var i=0;i<this.CA.points.length;i++){
-                this.CA.setPointFree({
+        }
+        setTimeout(function(){
+            for(var i = 0;i < CanvasAnimation.points.length;i++){
+                CanvasAnimation.addPointTask({
                     index:i,
-                    limit:60,
+                    attr:["opacity"],
+                    start:{opacity:0},
+                    end:{opacity:1},
+                    duration:180,
                     speed:1,
                     zFlag:true
                 });
             }
-            // console.log("this.canvasAnimation.points:"+this.canvasAnimation.points)
-        },
-        /*********************************程序入口*********************************/
+        },1000)
 
-        /*********************************渲染开关*********************************/
-        startRAF:function(){
-            var _self = this;
-            var loop = function(){
-                _self.CA.draw();
-                _self.RAF = r(loop);
-            };
-            var r = this.CA.requestAnimationFrame();
-            _self.RAF = r(loop);
-        },
-        stopRAF:function(){
-            window.cancelAnimationFrame(this.RAF);
-        },
-        /*********************************渲染开关*********************************/
-
-
-        /*********************************功能业务*********************************/
-        backToStart:function(){
-            var limitRad1 = this.rand(0,Math.PI);
-            var limitRad2 = this.rand(-Math.PI,Math.PI);
-            var _self = this;
-            setTimeout(function(){
-                var i ;
-                for(i=0;i<_self.CA.points.length;i++){
-                    _self.CA.addPointTask({
-                        index:i,
-                        attr:["x","y","z"],
-                        start:{x:_self.CA.points[i].x,y:_self.CA.points[i].y,z:_self.CA.points[i].z},
-                        end:{x:0,y:0,z:0},
-                        // end:{x:3*Math.sin(limitRad1)*Math.cos(limitRad2),y:3*Math.sin(limitRad1)*Math.sin(limitRad2),z:3*Math.cos(limitRad1)},
-                        callback:_self.boom
-                    })
-                }
-            },5000);
-
-        },//点回到出发点
-
-        goToCircle:function(i){
-            var deg = this.points.length;
-            var limitRad1 = this.rand(0,Math.PI);
-            var limitRad2 = this.rand(-Math.PI,Math.PI);
-            for(var i = 0;i<this.points.length;i++){
-                this.addPointTask({
-                    index:i,
-                    attr:["x","y","z"],
-                    start:{x:this.points[i].x,y:this.points[i].y,z:this.points[i].z},
-                    end:{x:100*Math.sin(i*Math.PI/deg)*Math.cos(i*(1/50)*Math.PI-Math.PI),y:100*Math.sin(i*Math.PI/deg)*Math.sin(i*(1/50)*Math.PI-Math.PI),z:100*Math.cos(i*Math.PI/deg)},
-                    duration:200
-                })
-            }
-        },
-        boom:function(i){
-            for(var i = 0;i<this.points.length;i++){
-                this.addPointTask({
-                    index:i,
-                    attr:["x","y","z"],
-                    start:{x:this.points[i].x,y:this.points[i].y,z:this.points[i].z},
-                    end:{x:this.rand(-300,300),y:this.rand(-300,300),z:this.rand(-300,300)},
-                    duration:60
-                })
-            }
-        },
-        /*********************************功能业务*********************************/
-
-        /*********************************工具函数*********************************/
-        rand:function (min, max) {
-            return (Math.round((Math.random() * (max - min + 1) + min)*100)/100)
-        },
-        /*********************************工具函数*********************************/
     };
+    /*********************************程序入口*********************************/
 
-    var app = new main();//添加一个canvasAnimation实例
+    /*********************************渲染开关*********************************/
+    main.startRender = function(){
+        var loop = function(){
+            CanvasAnimation.draw();
+            main.RAF = r(loop);
+        };
+        var r = CanvasAnimation.requestAnimationFrame();
+        this.RAF = r(loop);
+    };
+    main.stopRender = function(){
+        window.cancelAnimationFrame(this.RAF);
+    };
+    /*********************************渲染开关*********************************/
 
-    app.start();//自定义主流程内容，可操控canvasAnimation实例
+    /*********************************业务*********************************/
+    main.backToStart = function(){
 
-    app.startRAF();//开始渲染
-    app.backToStart();
+        setTimeout(function(){
+            var i ;
+            for(i=0;i < CanvasAnimation.points.length;i++){
+                CanvasAnimation.addPointTask({
+                    index:i,
+                    attr:["x","y","z"],
+                    start:{x:CanvasAnimation.points[i].x,y:CanvasAnimation.points[i].y,z:CanvasAnimation.points[i].z},
+                    end:{x:0,y:0,z:0},
+                    callback:function(){
 
-    win.test = app;
+                    }
+                })
+            }
+        },5000);
+    };//点回到出发点
+    main.boom = function(){
+        for(var i = 0;i < CanvasAnimation.points.length;i++){
+            this.addPointTask({
+                index:i,
+                attr:["x","y","z"],
+                start:{x:CanvasAnimation.points[i].x,y:CanvasAnimation.points[i].y,z:CanvasAnimation.points[i].z},
+                end:{x:this.rand(-300,300),y:this.rand(-300,300),z:this.rand(-300,300)},
+                duration:60
+            })
+        }
+    };
+    main.goToCircle = function(i){
+        var deg = this.points.length;
+        var limitRad1 = this.rand(0,Math.PI);
+        var limitRad2 = this.rand(-Math.PI,Math.PI);
+        for(var i = 0;i<this.points.length;i++){
+            this.addPointTask({
+                index:i,
+                attr:["x","y","z"],
+                start:{x:this.points[i].x,y:this.points[i].y,z:this.points[i].z},
+                end:{x:100*Math.sin(i*Math.PI/deg)*Math.cos(i*(1/50)*Math.PI-Math.PI),y:100*Math.sin(i*Math.PI/deg)*Math.sin(i*(1/50)*Math.PI-Math.PI),z:100*Math.cos(i*Math.PI/deg)},
+                duration:200
+            })
+        }
+    };
+    /*********************************业务*********************************/
+
+
+
+    /*********************************工具函数*********************************/
+    main.rand = function (min, max) {
+        return (Math.round((Math.random() * (max - min + 1) + min)*100)/100)
+    },
+    /*********************************工具函数*********************************/
+
+
+
+
+    win.main = main;
 })(window);
+$(function(){
+    main.init();
+    main.start();//自定义主流程内容，可操控canvasAnimation实例
+    main.startRender();//开始渲染
+    main.backToStart();
+});
