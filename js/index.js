@@ -150,10 +150,10 @@
         config.free.flag = "boolean" == config.free.flag ? config.free.flag : false;
         config.free.zFlag = "boolean" == config.free.zFlag ? config.free.zFlag : false;
         config.free.now = config.free.now ? config.free.now : 0;
-        config.free.limit = config.free.limit ? config.free.limit : 60;
-        config.free.limitSpace = config.free.limit;
+        config.free.duration = config.free.duration ? config.free.duration : 60;
+        config.free.durationtRange = config.free.duration;
         config.free.speed = {x: this.speed, y: this.speed, z: this.speed};
-        config.free.speedSpace = config.free.speed;
+        config.free.speedRange = config.free.speed;
 
         config.valid = true;
         config.inTask = false;
@@ -256,18 +256,71 @@
 
         config = null;
     };
+    CanvasAnimation.addPointsToDataTask = function(config){};//一段粒子到各自应有的位置
+    CanvasAnimation.getImageData = function(config){
+        config = config ? config:{};
+
+        var canvas = document.createElement("canvas"),
+            ctx = canvas.getContext("2d"),
+            data;
+        canvas.width = this._w;
+        canvas.height = this._h;
+
+        switch(config.type){
+            case "text":
+                config.font = config.font ? config.font : "30px Georgia",
+                config.content = config.content ? config.content : "Hello World!",
+                config.contentX = typeof config.contentX == "number" ? config.contentX : 0;
+                config.contentY = typeof config.contentY == "number" ? config.contentY : 0;
+                config.color = config.color ? config.color : "#ffffff";
+                ctx.font = config.font,
+                ctx.fillStyle = config.color,
+                ctx.clearRect(-this._w / 2, -this._h / 2, this._w, this._h),
+                ctx.fillText(config.content, config.contentX, config.contentY);
+                break;
+            case "pic":
+
+                config.id = config.id ? config.id : false;
+                config.xn = config.xn ? config.xn : 4;//横向间隔
+                config.yn = config.yn ? config.yn : 4;//纵向间隔
+                config.opacity = config.opacity ? config.opacity : 128;//透明度限制
+                config.xOffset = config.xOffset ? config.xOffset : 0;//左右稍作偏移打乱
+                config.yOffset = config.yOffset ? config.yOffset : 0;//上下稍作偏移打乱
+
+                var picObj = this.getDom(config.id),
+                    $picObj = $(picObj),
+                    left = parseInt($picObj.css("left")),
+                    top = parseInt($picObj.css("top"));
+                ctx.clearRect(-this._w / 2,-this._h / 2,this._w,this.height);
+                ctx.drawImage(picObj , 0 , 0 , picObj.width , picObj.height , left-this._w / 2 , picObj.width , picObj.height);
+                break;
+            default:
+                console.error("CanvasAnimation.getImageData(config)缺少config.type属性");
+                break;
+        }
+
+
+
+
+
+        b = this.c_obj.getImageData(0, 0, this.width, this.height);
+        a = this.getData(b, a.xn, a.yn, a.opacity, a.xOffset, a.yOffset);
+        this.c_obj.clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        return a
+    };
     CanvasAnimation.setPointFree = function(config){
         config = config ? config:{};
         config.index = config.index ? config.index:0;
-        config.limit = config.limit ? config.limit:60;
+        config.duration = config.duration ? config.duration:60;
         config.speed = ("number" == typeof config.speed) ? config.speed:3;
         config.zFlag = ("boolean" == typeof config.zFlag) ? config.zFlag:false;
+
         this.points[config.index].free.flag = true;
         this.points[config.index].free.now = 0;
         this.points[config.index].free.zFlag = config.zFlag;
-        this.points[config.index].free.limitSpace = config.limit;
-        this.points[config.index].free.limit = this.rand(config.limit/2,config.limit);
-        this.points[config.index].free.speedSpace = config.speed;
+        this.points[config.index].free.durationRange = config.duration;
+        this.points[config.index].free.duration = this.rand(this.points[config.index].free.durationRange/2,this.points[config.index].free.durationRange);
+        this.points[config.index].free.speedRange = config.speed;
         this.points[config.index].free.speed = {
             x:this.rand(-config.speed,config.speed),
             y:this.rand(-config.speed,config.speed),
@@ -290,9 +343,9 @@
         if(this.points[index].free.zFlag == true){this.points[index].z+=this.points[index].free.speed.z;}
         this.points[index].free.now+=this.speed;
 
-        if(this.points[index].free.now>=this.points[index].free.limit){//到终点了
+        if(this.points[index].free.now>=this.points[index].free.duration){//到终点了
             this.points[index].free.now = 0;
-            this.points[index].free.limit = this.rand(this.points[index].free.limitSpace/2,this.points[index].free.limitSpace);
+            this.points[index].free.duration = this.rand(this.points[index].free.durationRange/2,this.points[index].free.durationRange);
             this.points[index].free.speed = {
                 x:this.points[index].free.speed.x*=this.getOne(),
                 y:this.points[index].free.speed.y*=this.getOne(),
@@ -581,7 +634,7 @@
         for(var i = 0;i < CanvasAnimation.points.length;i++){
             CanvasAnimation.setPointFree({
                 index:i,
-                limit:120,
+                limit:180,
                 speed:1,
                 zFlag:true
             });
@@ -672,7 +725,9 @@
 
 
 
-
+    win.iCreative = {
+        CA : CanvasAnimation,
+    };
     win.main = main;
 })(window);
 $(function(){
