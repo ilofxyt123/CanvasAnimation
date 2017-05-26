@@ -31,3 +31,7 @@ html,body{
     position:absolute;
     top:70%;
 }
+@font-face {
+    font-family: my;
+    src: url("../ygy.ttf");
+}

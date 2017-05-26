@@ -246,23 +246,35 @@
         }
 
         if(config.attr.length == 1&&config.attr[0]=="opacity"){
-            config.obj.inTask = false;//改变透明度不算任务，标记为任务未执行
+            // config.obj.inTask = false;//改变透明度不算任务，标记为任务未执行
         }
         else{
             config.obj.inTask = true;//标记为任务执行
+            // this.points[config.index].inTask = true;
         }
         config.obj.noTask = false;//有任务
         this.task.push(config);
-
-        config = null;
     };
     CanvasAnimation.addPointsToDataTask = function(config){};//一段粒子到各自应有的位置
     CanvasAnimation.getImageData = function(config){
+        /*config可选参数:
+         * config = {
+         *   id:"pic",//传入要打散的图片id
+         *   opacity:1,//打散的图片的透明度
+         *   width:10,//所有粒子的宽，默认10
+         *   height:10,//所有粒子的高度，默认10
+         *   sizeSame:true,//所有粒子大小是否一致，默认true
+         * }
+         * */
         config = config ? config:{};
+        config.xn = config.xn ? config.xn : 4;//横向间隔
+        config.yn = config.yn ? config.yn : 4;//纵向间隔
+        config.opacity = config.opacity ? config.opacity : 128;//透明度限制
+        config.xOffset = config.xOffset ? config.xOffset : 0;//左右稍作偏移打乱
+        config.yOffset = config.yOffset ? config.yOffset : 0;//上下稍作偏移打乱
 
         var canvas = document.createElement("canvas"),
-            ctx = canvas.getContext("2d"),
-            data;
+            ctx = canvas.getContext("2d");
         canvas.width = this._w;
         canvas.height = this._h;
 
@@ -273,40 +285,47 @@
                 config.contentX = typeof config.contentX == "number" ? config.contentX : 0;
                 config.contentY = typeof config.contentY == "number" ? config.contentY : 0;
                 config.color = config.color ? config.color : "#ffffff";
-                ctx.font = config.font,
-                ctx.fillStyle = config.color,
-                ctx.clearRect(-this._w / 2, -this._h / 2, this._w, this._h),
+                ctx.font = config.font;
+                ctx.fillStyle = config.color;
+                ctx.clearRect(-this._w / 2, -this._h / 2, this._w, this._h);
                 ctx.fillText(config.content, config.contentX, config.contentY);
                 break;
             case "pic":
 
                 config.id = config.id ? config.id : false;
-                config.xn = config.xn ? config.xn : 4;//横向间隔
-                config.yn = config.yn ? config.yn : 4;//纵向间隔
-                config.opacity = config.opacity ? config.opacity : 128;//透明度限制
-                config.xOffset = config.xOffset ? config.xOffset : 0;//左右稍作偏移打乱
-                config.yOffset = config.yOffset ? config.yOffset : 0;//上下稍作偏移打乱
-
                 var picObj = this.getDom(config.id),
                     $picObj = $(picObj),
                     left = parseInt($picObj.css("left")),
                     top = parseInt($picObj.css("top"));
-                ctx.clearRect(-this._w / 2,-this._h / 2,this._w,this.height);
-                ctx.drawImage(picObj , 0 , 0 , picObj.width , picObj.height , left-this._w / 2 , picObj.width , picObj.height);
+                ctx.clearRect(-this._w / 2,-this._h / 2,this._w,this._h);
+                // ctx.drawImage(picObj , 0 , 0 , picObj.width , picObj.height , left-this._w / 2 , top-this._h/2 , picObj.width , picObj.height);
+                ctx.drawImage(picObj , 0 , 0 , picObj.width , picObj.height , left , top , picObj.width , picObj.height);
                 break;
             default:
                 console.error("CanvasAnimation.getImageData(config)缺少config.type属性");
                 break;
         }
-
-
-
-
-
-        b = this.c_obj.getImageData(0, 0, this.width, this.height);
-        a = this.getData(b, a.xn, a.yn, a.opacity, a.xOffset, a.yOffset);
-        this.c_obj.clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
-        return a
+        document.body.appendChild(canvas)
+        console.log(config)
+        // var ImageData = ctx.getImageData(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
+        var ImageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        var positionArr = this.getData(ImageData,config.xn,config.yn,config.opacity,config.xOffset,config.yOffset);
+        // ctx.clearRect(-this._w / 2,-this._h / 2,this._w,this._h);
+        return positionArr;
+    };
+    CanvasAnimation.getData = function(ImageData , xn , yn , opacity , xOffset , yOffset){
+        var position = [];//有效点位坐标[x0,y0,x1,y1,x2,y2,...]
+        var width = ImageData.width;
+        var height = ImageData.height;
+        for(var i = 0;i <  width;i+=xn){
+            for(var j = 0;j < height;j+=yn){
+                if(ImageData.data[ (j * width + i) * 4 +3] >opacity){
+                    position.push(i-this._w/2,-j+this._h/2);
+                }
+            }
+        }
+        console.log(position)
+        return position;
     };
     CanvasAnimation.setPointFree = function(config){
         config = config ? config:{};
@@ -336,8 +355,7 @@
         // }
     };
     CanvasAnimation.freePoint = function(index){
-        if(this.points[index].free.flag == false || this.points[index].inTask){return;};//非自由粒子跳出function
-
+        if(this.points[index].free.flag == false || this.points[index].inTask == true){return;};//非自由粒子跳出function
         this.points[index].x+=this.points[index].free.speed.x;
         this.points[index].y+=this.points[index].free.speed.y;
         if(this.points[index].free.zFlag == true){this.points[index].z+=this.points[index].free.speed.z;}
@@ -467,20 +485,6 @@
     };//绘制一帧
     CanvasAnimation.drawLines = function(){};
 
-    CanvasAnimation.getImageData = function(config){
-        /*config可选参数:
-         * config = {
-         *   id:"pic",//传入要打散的图片id
-         *   opacity:1,//打散的图片的透明度
-         *   width:10,//所有粒子的宽，默认10
-         *   height:10,//所有粒子的高度，默认10
-         *   sizeSame:true,//所有粒子大小是否一致，默认true
-         * }
-         * */
-        config = config ? config : {};
-        config.id = config.id ? config.id :(function(){console.error("必须传入图片id");return false;}());
-        config.xn = config.xn ? config.xn : 4;
-    };
 
     CanvasAnimation.requestAnimationFrame = function(){
         return window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (handler) {setTimeout(handler, 1000 / 60)}
@@ -622,11 +626,33 @@
 
     var main = new function(){
         this.RAF = 0;
+        this.testData = [];
     };//对CanvasAnimation做了测试，各个使用范例
     main.init = function(){
         CanvasAnimation.init({
-            pointNumber:100,
+            pointNumber:700,
             opacity:0
+        });
+        // for(var i=0;i<CanvasAnimation.points.lenght;i++){
+        //     CanvasAnimation.points[i].x = 0
+        //     CanvasAnimation.points[i].y = 0
+        //     CanvasAnimation.points[i].z = 0
+        // }
+        console.log(CanvasAnimation.points[100]);
+        this.testData1 = CanvasAnimation.getImageData({
+            type:"pic",
+            id:"logopic",
+            xn:6,
+            yn:6
+        });
+        this.testData2 = CanvasAnimation.getImageData({
+            type:"text",
+            content:"iCreative",
+            contentX:150,
+            contentY:300,
+            font:"100px my",
+            xn:6,
+            yn:6
         });
     };
     /*********************************程序入口*********************************/
@@ -636,9 +662,10 @@
                 index:i,
                 limit:180,
                 speed:1,
-                zFlag:true
+                zFlag:false
             });
         }
+
         setTimeout(function(){
             for(var i = 0;i < CanvasAnimation.points.length;i++){
                 CanvasAnimation.addPointTask({
@@ -646,13 +673,58 @@
                     attr:["opacity"],
                     start:{opacity:0},
                     end:{opacity:1},
-                    duration:180,
+                    duration:120,
                     speed:1,
                     zFlag:true
                 });
             }
-        },1000)
 
+        },1000);
+
+        // var canvas = document.createElement("canvas"),
+        //     ctx = canvas.getContext("2d"),
+        //     w = window.innerWidth,
+        //     h = window.innerHeight;
+        //
+        // canvas.width = w;
+        // canvas.height = h;
+        // var logo = document.getElementById("logopic");
+        // ctx.drawImage(logo,0,0,logo.width,logo.height,50,50,logo.width,logo.height);
+        // var ImageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+
+        // CanvasAnimation.getData(ImageData,4,4,128);
+
+        setTimeout(function(){
+            for(var i=0;i<CanvasAnimation.points.length;i++){
+                var index = i;
+                index = index%(main.testData1.length/2);
+                CanvasAnimation.addPointTask({
+                    index:i,
+                    attr:["x","y"],
+                    start:{x:CanvasAnimation.points[i].x,y:CanvasAnimation.points[i].y,z:CanvasAnimation.points[i].z},
+                    end:{x:main.testData1[2*index],y:main.testData1[2*index+1],z:0},
+                    duration:60
+                })
+            }
+        },3000)
+
+        setTimeout(function(){
+
+            for(var i=0;i<CanvasAnimation.points.length;i++){
+                var index = i;
+                index = index%(main.testData2.length/2);
+                CanvasAnimation.addPointTask({
+                    index:i,
+                    attr:["x","y"],
+                    start:{x:CanvasAnimation.points[i].x,y:CanvasAnimation.points[i].y,z:CanvasAnimation.points[i].z},
+                    end:{x:main.testData2[2*index],y:main.testData2[2*index+1],z:0},
+                    duration:60
+                })
+            }
+            for(var i = 0;i < CanvasAnimation.points.length;i++){
+                CanvasAnimation.points[i].free.flag = false;
+            }
+        },5000)
     };
     /*********************************程序入口*********************************/
 
@@ -734,5 +806,5 @@ $(function(){
     main.init();
     main.start();//自定义主流程内容，可操控canvasAnimation实例
     main.startRender();//开始渲染
-    main.backToStart();
+    // main.backToStart();
 });
