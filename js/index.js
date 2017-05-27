@@ -630,7 +630,7 @@
     };//对CanvasAnimation做了测试，各个使用范例
     main.init = function(){
         CanvasAnimation.init({
-            pointNumber:700,
+            pointNumber:400,
             opacity:0
         });
         // for(var i=0;i<CanvasAnimation.points.lenght;i++){
@@ -642,8 +642,8 @@
         this.testData1 = CanvasAnimation.getImageData({
             type:"pic",
             id:"logopic",
-            xn:6,
-            yn:6
+            xn:8,
+            yn:8
         });
         this.testData2 = CanvasAnimation.getImageData({
             type:"text",
@@ -651,8 +651,8 @@
             contentX:150,
             contentY:300,
             font:"100px my",
-            xn:6,
-            yn:6
+            xn:8,
+            yn:8
         });
     };
     /*********************************程序入口*********************************/
@@ -662,7 +662,7 @@
                 index:i,
                 limit:180,
                 speed:1,
-                zFlag:false
+                zFlag:true
             });
         }
 
@@ -700,10 +700,10 @@
                 index = index%(main.testData1.length/2);
                 CanvasAnimation.addPointTask({
                     index:i,
-                    attr:["x","y"],
+                    attr:["x","y","z"],
                     start:{x:CanvasAnimation.points[i].x,y:CanvasAnimation.points[i].y,z:CanvasAnimation.points[i].z},
                     end:{x:main.testData1[2*index],y:main.testData1[2*index+1],z:0},
-                    duration:60
+                    duration:120
                 })
             }
         },3000)
@@ -715,16 +715,16 @@
                 index = index%(main.testData2.length/2);
                 CanvasAnimation.addPointTask({
                     index:i,
-                    attr:["x","y"],
+                    attr:["x","y","z"],
                     start:{x:CanvasAnimation.points[i].x,y:CanvasAnimation.points[i].y,z:CanvasAnimation.points[i].z},
                     end:{x:main.testData2[2*index],y:main.testData2[2*index+1],z:0},
-                    duration:60
+                    duration:120
                 })
             }
             for(var i = 0;i < CanvasAnimation.points.length;i++){
                 CanvasAnimation.points[i].free.flag = false;
             }
-        },5000)
+        },6000)
     };
     /*********************************程序入口*********************************/
 
