@@ -237,10 +237,10 @@
 
         for(var l= 0;l < config.attr.length;l++){//检测要做动画的属性，起点终点添加是否正确
             if(config.start[config.attr[l]] == undefined){
-                alert("动画添加失败，缺少动画起点属性start")
+                console.error("动画添加失败，缺少动画起点属性start")
             }
             if(config.end[config.attr[l]] == undefined){
-                alert("动画添加失败,缺少动画终点属性end");
+                console.error("动画添加失败,缺少动画终点属性end");
                 return;
             }
         }
